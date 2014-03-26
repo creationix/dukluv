@@ -1,0 +1,8 @@
+[submodule "lib/uv"]
+	url = git@github.com:joyent/libuv.git
+	ref = refs/heads/master
+	path = lib/uv
+[submodule "lib/duktape"]
+	url = git@github.com:svaarala/duktape.git
+	ref = refs/heads/master
+	path = lib/duktape
