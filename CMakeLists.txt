@@ -10,7 +10,8 @@ include_directories(
 
 include(uv.cmake)
 
-add_executable(dukluv ${DUKTAPEDIR}/src/duktape.c
+add_executable(dukluv
+  ${DUKTAPEDIR}/src/duktape.c
   src/duv.c
   src/main.c
 )
