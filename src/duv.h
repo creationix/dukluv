@@ -6,6 +6,14 @@
 #include "refs.h"
 #include "utils.h"
 
+#ifndef PATH_MAX
+#define PATH_MAX (8096)
+#endif
+
+#ifndef MAX_TITLE_LENGTH
+#define MAX_TITLE_LENGTH (8192)
+#endif
+
 // There are two slots for holding callbacks.  One is for the CLOSED event.
 // The other slot is for all others since they never conflict in practice.
 #define duv_callback_id int
@@ -31,5 +39,8 @@ typedef struct {
 } duv_handle_t;
 
 duk_ret_t dukopen_duv(duk_context *ctx);
+
+// From misc.c
+static const char* duv_protocol_to_string(int family);
 
 #endif

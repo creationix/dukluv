@@ -83,6 +83,79 @@ test("shrinking interval", function (expect) {
   }
 });
 
+////////////////////////////////////////////////////////////////////////////////
+
+test("uv.guess_handle", function () {
+  print("stdio fd types",
+    0, uv.guess_handle(0),
+    1, uv.guess_handle(1),
+    2, uv.guess_handle(2)
+  );
+});
+
+test("uv.version and uv.version_string", function () {
+  var version = uv.version();
+  var version_string = uv.version_string();
+  print("version", version, "version-string", version_string);
+  assert(typeof version === "number");
+  assert(typeof version_string === "string");
+});
+
+test("memory size", function () {
+  var rss = uv.resident_set_memory();
+  var total = uv.get_total_memory();
+  print("rss", rss, "total", total);
+  assert(rss < total);
+});
+
+test("uv.uptime", function () {
+  var uptime = uv.uptime();
+  print("uptime", uptime);
+});
+
+test("uv.getrusage", function () {
+  var rusage = uv.getrusage();
+  print(JSON.stringify(rusage));
+});
+
+test("uv.cpu_info", function () {
+  var info = uv.cpu_info();
+  print(JSON.stringify(info));
+});
+
+test("uv.interface_addresses", function () {
+  var addresses = uv.interface_addresses();
+  print(JSON.stringify(addresses));
+});
+
+test("uv.loadavg", function () {
+  var avg = uv.loadavg();
+  print.apply(print, avg);
+  assert(avg.length === 3);
+});
+
+test("uv.exepath", function () {
+  var path = uv.exepath();
+  print("exepath", path);
+});
+
+test("uv.cwd and uv.chdir", function () {
+  var old = uv.cwd();
+  print("original", old);
+  uv.chdir("/");
+  var cwd = uv.cwd();
+  print("new", cwd);
+  assert(cwd !== old);
+  uv.chdir(old);
+});
+
+test("uv.hrtime", function () {
+  var time = uv.hrtime();
+  print("hrtime", time);
+});
+
+////////////////////////////////////////////////////////////////////////////////
+
 // Micro assert library
 function assert(cond, message) {
   if (!cond) {
@@ -92,7 +165,9 @@ function assert(cond, message) {
 
 // Mini test framework
 function test(name, fn) {
+  var cwd;
   try {
+    cwd = uv.cwd();
     var expects = [];
     print("\x1b[33mStarting test: " + name + "\x1b[39m");
     fn(function (fn, left) {
@@ -119,6 +194,9 @@ function test(name, fn) {
     expects.forEach(function (fn) {
       throw new Error("Missing expected call: " + fn);
     });
+    if (uv.cwd() !== cwd) {
+      throw new Error("Test left cwd modified: " + cwd + " != " + uv.cwd());
+    }
     print("\x1b[32mPassed!\x1b[39m");
   }
   catch (err) {
@@ -127,6 +205,7 @@ function test(name, fn) {
   }
   finally {
     uv.walk(uv.close);
+    uv.chdir(cwd);
     uv.run();
   }
 }
