@@ -166,7 +166,6 @@ if(APPLE)
 endif()
 
 add_library(uv STATIC ${SOURCES})
-set_property(TARGET uv PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 if("${CMAKE_SYSTEM_NAME}" MATCHES "FreeBSD")
   target_link_libraries(uv
