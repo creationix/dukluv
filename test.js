@@ -119,7 +119,7 @@ test("memory size", function () {
 
 test("uv.uptime", function () {
   var uptime = uv.uptime();
-  print("uptime", uptime);
+  p({uptime: uptime});
 });
 
 test("uv.getrusage", function () {
@@ -139,28 +139,30 @@ test("uv.interface_addresses", function () {
 
 test("uv.loadavg", function () {
   var avg = uv.loadavg();
-  p(avg);
+  p({loadavg:avg});
   assert(avg.length === 3);
 });
 
 test("uv.exepath", function () {
   var path = uv.exepath();
-  print("exepath", path);
+  p({exepath: path});
 });
 
 test("uv.cwd and uv.chdir", function () {
   var old = uv.cwd();
-  print("original", old);
   uv.chdir("/");
   var cwd = uv.cwd();
-  print("new", cwd);
+  p({
+    original: old,
+    changed: cwd
+  });
   assert(cwd !== old);
   uv.chdir(old);
 });
 
 test("uv.hrtime", function () {
   var time = uv.hrtime();
-  p("hrtime", time);
+  p({"hrtime": time});
 });
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -178,7 +180,7 @@ function test(name, fn) {
   try {
     cwd = uv.cwd();
     var expects = [];
-    print("\x1b[33mStarting test: " + name + "\x1b[39m");
+    print("\n\x1b[38;5;254mStarting test: \x1b[38;5;69m" + name + "\x1b[0m");
     fn(function (fn, left) {
       left = left || 1;
       expects.push(fn);
@@ -206,11 +208,10 @@ function test(name, fn) {
     if (uv.cwd() !== cwd) {
       throw new Error("Test left cwd modified: " + cwd + " != " + uv.cwd());
     }
-    print("\x1b[32mPassed!\x1b[39m");
+    print("\x1b[38;5;46mPassed!\x1b[0m");
   }
   catch (err) {
-    print("\x1b[31mFailed\x1b[39m");
-    print(err.stack);
+    print("\x1b[38;5;196m" + err.stack + "\x1b[0m");
   }
   finally {
     uv.walk(uv.close);
@@ -225,26 +226,6 @@ function p() {
 
 function getDump() {
   var quote, quote2, obracket, cbracket, obrace, cbrace, comma, colon;
-
-  var colors = {
-    black: "0;30",
-    red: "0;31",
-    green: "0;32",
-    yellow: "0;33",
-    blue: "0;34",
-    magenta: "0;35",
-    cyan: "0;36",
-    white: "0;37",
-    B: "1;",
-    Bblack: "1;30",
-    Bred: "1;31",
-    Bgreen: "1;32",
-    Byellow: "1;33",
-    Bblue: "1;34",
-    Bmagenta: "1;35",
-    Bcyan: "1;36",
-    Bwhite: "1;37"
-  };
 
   var theme = {
     quotes: "38;5;33",
@@ -263,7 +244,6 @@ function getDump() {
 
   quote = colorize("quotes", '"', "text");
   quote2 = colorize("quotes", '"');
-  print(quote, quote2);
   obracket = colorize("punc", '[');
   cbracket = colorize("punc", ']');
   obrace = colorize("punc", '{');
@@ -350,6 +330,3 @@ function getDump() {
   return dump;
 
 }
-
-p("hello\nworld\0\r\tstuff", 1, 2, true, false, null, undefined, print, p, /123/);
-p(global);
