@@ -5,6 +5,7 @@
 #include "loop.c"
 #include "handle.c"
 #include "timer.c"
+#include "tty.c"
 #include "misc.c"
 
 static const duk_function_list_entry duv_funcs[] = {
@@ -22,6 +23,12 @@ static const duk_function_list_entry duv_funcs[] = {
   {"timer_again", duv_timer_again, 1},
   {"timer_set_repeat", duv_timer_set_repeat, 2},
   {"timer_get_repeat", duv_timer_get_repeat, 1},
+
+  // tty.c
+  {"new_tty", duv_new_tty, 2},
+  {"tty_set_mode", duv_tty_set_mode, 2},
+  {"tty_reset_mode", duv_tty_reset_mode, 0},
+  {"tty_get_winsize", duv_tty_get_winsize, 1},
 
   // misc.c
   {"guess_handle", duv_guess_handle, 1},

@@ -2,7 +2,7 @@
 
 static uv_timer_t* duv_require_timer(duk_context *ctx, int index) {
   // TODO: verify pointer is uv_handle_t* somehow.
-  uv_timer_t* handle = duk_require_pointer(ctx, 0);
+  uv_timer_t* handle = duk_require_pointer(ctx, index);
   if (handle->type != UV_TIMER) {
     duk_error(ctx, DUK_ERR_TYPE_ERROR, "Expected uv_timer_t");
   }

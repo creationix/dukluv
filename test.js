@@ -1,6 +1,13 @@
 "use strict";
 
-var dump = getDump();
+var dump;
+try {
+  dump = getDump();
+}
+catch (err) {
+  print(err.stack);
+  throw err;
+}
 
 // This tests using timers for a simple timeout.
 // It also tests the handle close callback and
@@ -187,6 +194,8 @@ function assert(cond, message) {
   }
 }
 
+var stdout;
+
 // Mini test framework
 function test(name, fn) {
   var cwd;
@@ -213,6 +222,7 @@ function test(name, fn) {
     });
     uv.run();
     uv.walk(function (handle) {
+      if (handle === stdout) { return; }
       throw new Error("Unclosed handle: " + handle);
     });
     expects.forEach(function (fn) {
@@ -227,7 +237,10 @@ function test(name, fn) {
     print("\x1b[38;5;196m" + err.stack + "\x1b[0m");
   }
   finally {
-    uv.walk(uv.close);
+    uv.walk(function (handle) {
+      if (handle === stdout) { return; }
+      uv.close(handle);
+    });
     uv.chdir(cwd);
     uv.run();
   }
@@ -272,7 +285,11 @@ function getDump() {
     return color(color_name) + string + color(reset_name);
   }
 
+  stdout = uv.new_tty(1, false);
+  var width = uv.tty_get_winsize(stdout).width;
+
   function dump(value) {
+
     var seen = [];
     return dumper(value, 0);
     function dumper(value, depth) {
@@ -328,7 +345,7 @@ function getDump() {
       }
 
       var line = opener + " " + parts.join(comma + " ") + " " + closer;
-      var max = 100 - depth * 2;
+      var max = width - depth * 2;
       if (strip(line).length > max) {
         var lines = [];
         line = [];
