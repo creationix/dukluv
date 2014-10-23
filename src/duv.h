@@ -6,6 +6,20 @@
 #include "refs.h"
 #include "utils.h"
 
+#if defined(_WIN32)
+# include <fcntl.h>
+# include <sys/types.h>
+# include <sys/stat.h>
+# define S_ISREG(x)  (((x) & _S_IFMT) == _S_IFREG)
+# define S_ISDIR(x)  (((x) & _S_IFMT) == _S_IFDIR)
+# define S_ISFIFO(x) (((x) & _S_IFMT) == _S_IFIFO)
+# define S_ISCHR(x)  (((x) & _S_IFMT) == _S_IFCHR)
+# define S_ISBLK(x)  0
+# define S_ISLNK(x)  0
+# define S_ISSOCK(x) 0
+#endif
+
+
 #ifndef PATH_MAX
 #define PATH_MAX (8096)
 #endif
