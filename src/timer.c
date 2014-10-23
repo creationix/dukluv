@@ -2,7 +2,7 @@
 
 static uv_timer_t* duv_require_timer(duk_context *ctx, int index) {
   // TODO: verify pointer is uv_handle_t* somehow.
-  uv_timer_t* handle = duk_require_pointer(ctx, index);
+  uv_timer_t* handle = duk_require_buffer(ctx, index, NULL);
   if (handle->type != UV_TIMER) {
     duk_error(ctx, DUK_ERR_TYPE_ERROR, "Expected uv_timer_t");
   }
@@ -10,15 +10,18 @@ static uv_timer_t* duv_require_timer(duk_context *ctx, int index) {
 }
 
 static duk_ret_t duv_new_timer(duk_context *ctx) {
-  uv_timer_t* handle = duk_alloc(ctx, sizeof(*handle));
-  duv_check(ctx, uv_timer_init(duv_loop(ctx), handle));
-  duv_setup_handle(ctx, (uv_handle_t*)handle);
+  uv_timer_t* handle = duk_push_fixed_buffer(ctx, sizeof(*handle));
+  int ret = uv_timer_init(duv_loop(ctx), handle);
+  if (ret < 0) {
+    duk_pop(ctx);
+    duv_check(ctx, ret);
+  }
+  handle->data = duv_setup_handle(ctx);
   return 1;
 }
 
 static void duv_timer_cb(uv_timer_t* handle) {
-  duk_context *ctx = handle->loop->data;
-  duv_emit_event(ctx, (uv_handle_t*)handle, DUV_TIMEOUT, 0);
+  duv_emit_event(handle->loop->data, handle->data, DUV_TIMEOUT, 0);
 }
 
 static duk_ret_t duv_timer_start(duk_context *ctx) {

@@ -3,14 +3,15 @@
 static duk_ret_t duv_run(duk_context *ctx) {
   int ret = uv_run(duv_loop(ctx), UV_RUN_DEFAULT);
   if (ret < 0) {
-    return duv_error(ctx, ret);
+    duv_error(ctx, ret);
   }
   return 0;
 }
 
 static void duv_walk_cb(uv_handle_t *handle, duk_context *ctx) {
   duk_dup(ctx, 0);
-  duk_push_pointer(ctx, handle);
+  duv_handle_t* data = handle->data;
+  duv_push_ref(ctx, data->ref);
   duk_call(ctx, 1);
   duk_pop(ctx);
 }

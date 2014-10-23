@@ -184,6 +184,28 @@ test("uv.hrtime", function () {
   p({"hrtime": time});
 });
 
+test("uv.shutdown", function (expect) {
+  var pipe = uv.new_pipe(true);
+  uv.pipe_open(pipe, 0);
+  var req = uv.shutdown(pipe, expect(onshutdown));
+  p({
+    pipe: pipe,
+    req: req,
+  });
+
+  function onshutdown(err) {
+    p("onshutdown", {err:err,this:this});
+    assert(this === req);
+    assert(!err, err);
+    uv.close(pipe, expect(onclosed));
+  }
+
+  function onclosed() {
+    p("onclosed", {this:this});
+    assert(this === pipe);
+  }
+});
+
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -285,8 +307,9 @@ function getDump() {
     return color(color_name) + string + color(reset_name);
   }
 
-  stdout = uv.new_tty(1, false);
-  var width = uv.tty_get_winsize(stdout).width;
+  // stdout = uv.new_tty(1, false);
+  // var width = uv.tty_get_winsize(stdout).width;
+  var width = 100;
 
   function dump(value) {
 

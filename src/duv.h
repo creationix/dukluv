@@ -3,8 +3,6 @@
 
 #include "duktape.h"
 #include "uv.h"
-#include "refs.h"
-#include "utils.h"
 
 #if defined(_WIN32)
 # include <fcntl.h>
@@ -52,7 +50,16 @@ typedef struct {
   int callbacks[2];
 } duv_handle_t;
 
+typedef struct {
+  int req_ref; // ref for uv_req_t's userdata
+  int callback_ref; // ref for callback
+  void* data; // extra data
+} duv_req_t;
+
 duk_ret_t dukopen_duv(duk_context *ctx);
+
+#include "refs.h"
+#include "utils.h"
 
 // From misc.c
 static const char* duv_protocol_to_string(int family);
