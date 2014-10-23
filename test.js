@@ -251,7 +251,7 @@ function getDump() {
     special: "38;5;131",
     special2: "38;5;126",
     regexp: "38;5;160",
-    punc: "38;5;238"
+    punc: "38;5;242"
   };
 
 
