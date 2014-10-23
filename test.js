@@ -1,5 +1,7 @@
 "use strict";
 
+var dump = getDump();
+
 // This tests using timers for a simple timeout.
 // It also tests the handle close callback and
 // makes sure self is passed in properly to callbacks.
@@ -18,6 +20,7 @@ test("simple timeout", function (expect) {
     print("closed", timer);
   }
 });
+
 
 // This is like the previous test, but using repeat.
 test("simple interval", function (expect) {
@@ -86,17 +89,20 @@ test("shrinking interval", function (expect) {
 ////////////////////////////////////////////////////////////////////////////////
 
 test("uv.guess_handle", function () {
-  print("stdio fd types",
-    0, uv.guess_handle(0),
-    1, uv.guess_handle(1),
-    2, uv.guess_handle(2)
-  );
+  p("stdio fd types", [
+    uv.guess_handle(0),
+    uv.guess_handle(1),
+    uv.guess_handle(2),
+  ]);
 });
 
 test("uv.version and uv.version_string", function () {
   var version = uv.version();
   var version_string = uv.version_string();
-  print("version", version, "version-string", version_string);
+  p({
+    version: version,
+    version_string: version_string,
+  });
   assert(typeof version === "number");
   assert(typeof version_string === "string");
 });
@@ -104,7 +110,10 @@ test("uv.version and uv.version_string", function () {
 test("memory size", function () {
   var rss = uv.resident_set_memory();
   var total = uv.get_total_memory();
-  print("rss", rss, "total", total);
+  p({
+    rss: rss,
+    total: total
+  });
   assert(rss < total);
 });
 
@@ -115,22 +124,22 @@ test("uv.uptime", function () {
 
 test("uv.getrusage", function () {
   var rusage = uv.getrusage();
-  print(JSON.stringify(rusage));
+  p(rusage);
 });
 
 test("uv.cpu_info", function () {
   var info = uv.cpu_info();
-  print(JSON.stringify(info));
+  p(info);
 });
 
 test("uv.interface_addresses", function () {
   var addresses = uv.interface_addresses();
-  print(JSON.stringify(addresses));
+  p(addresses);
 });
 
 test("uv.loadavg", function () {
   var avg = uv.loadavg();
-  print.apply(print, avg);
+  p(avg);
   assert(avg.length === 3);
 });
 
@@ -151,7 +160,7 @@ test("uv.cwd and uv.chdir", function () {
 
 test("uv.hrtime", function () {
   var time = uv.hrtime();
-  print("hrtime", time);
+  p("hrtime", time);
 });
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -210,3 +219,137 @@ function test(name, fn) {
   }
 }
 
+function p() {
+  print(Array.prototype.map.call(arguments, dump).join(" "));
+}
+
+function getDump() {
+  var quote, quote2, obracket, cbracket, obrace, cbrace, comma, colon;
+
+  var colors = {
+    black: "0;30",
+    red: "0;31",
+    green: "0;32",
+    yellow: "0;33",
+    blue: "0;34",
+    magenta: "0;35",
+    cyan: "0;36",
+    white: "0;37",
+    B: "1;",
+    Bblack: "1;30",
+    Bred: "1;31",
+    Bgreen: "1;32",
+    Byellow: "1;33",
+    Bblue: "1;34",
+    Bmagenta: "1;35",
+    Bcyan: "1;36",
+    Bwhite: "1;37"
+  };
+
+  var theme = {
+    quotes: "38;5;33",
+    text: "38;5;26",
+    escape: "38;5;45",
+    null: "38;5;240",
+    boolean: "38;5;113",
+    number: "38;5;166",
+    property: "38;5;255",
+    special: "38;5;131",
+    special2: "38;5;126",
+    regexp: "38;5;160",
+    punc: "38;5;238"
+  };
+
+
+  quote = colorize("quotes", '"', "text");
+  quote2 = colorize("quotes", '"');
+  print(quote, quote2);
+  obracket = colorize("punc", '[');
+  cbracket = colorize("punc", ']');
+  obrace = colorize("punc", '{');
+  cbrace = colorize("punc", '}');
+  comma = colorize("punc", ',');
+  colon = colorize("punc", ':');
+
+  function color(color_name) {
+   return "\x1b[" + (theme[color_name] || "0") + "m";
+  }
+
+  function colorize(color_name, string, reset_name) {
+    return color(color_name) + string + color(reset_name);
+  }
+
+  function dump(value) {
+    var seen = [];
+    return dumper(value, 0);
+    function dumper(value, depth) {
+      var type = typeof(value);
+      if (type === 'string') {
+        var str = JSON.stringify(value);
+        return (quote + str.substring(1, str.length - 1) + quote2).
+          replace(/(\\u[0-9a-f]{4}|\\["\\/bfnrt])/g, function (match) {
+            return colorize("escape", match, "text");
+          });
+      }
+      if (type === 'undefined' || value === null) {
+        return colorize("null", "" + value);
+      }
+      if (type === 'boolean') {
+        return colorize("boolean", "" + value);
+      }
+      if (type === 'number') {
+        return colorize("number", "" + value);
+      }
+      if (type === "function") {
+        return colorize("special", "[", "special2") +
+          "Function" + (value.name ? " " + value.name : "") +
+          colorize("special", "]");
+      }
+      if (type !== "object") {
+        return "" + value;
+      }
+      if (value instanceof RegExp) {
+        return colorize("regexp", "" + value);
+      }
+      var index = seen.indexOf(value);
+      if (depth > 2 || index >= 0) {
+        return colorize("special", "[", "special2") +
+          (Array.isArray(value) ? "Array" : "Object") +
+          colorize("special", "]");
+      }
+      seen.push(value);
+      var parts, opener, closer;
+      if (Array.isArray(value)) {
+        opener = obracket;
+        closer = cbracket;
+        parts = value.map(function (item) {
+          return dumper(item, depth + 1);
+        });
+      }
+      else {
+        opener = obrace;
+        closer = cbrace;
+        parts = Object.keys(value).map(function (key) {
+          return colorize("property", key) + colon + " " + dumper(value[key], depth + 1);
+        });
+      }
+
+      var line = opener + " " + parts.join(comma + " ") + " " + closer;
+      if (strip(line).length > 120 - depth * 2) {
+        line = opener + "\n  " + parts.join(comma + "\n").split("\n").join("\n  ") + "\n" + closer;
+      }
+
+      return line;
+    }
+  }
+
+  function strip(string) {
+    return string.replace(/\x1b\[[^m]*m/g, '');
+  }
+
+  return dump;
+
+}
+
+p("hello\nworld\0\r\tstuff", 1, 2, true, false, null, undefined, print, p, /123/);
+p(global);
