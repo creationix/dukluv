@@ -8,7 +8,7 @@ link: build/Makefile dukluv
 	ln -sf build/dukluv /usr/local/bin/dukluv
 
 test: dukluv
-	build/dukluv test.js
+	build/dukluv unit-tests.js
 
 clean:
 	rm -rf build

@@ -9,6 +9,7 @@
 #include "tcp.c"
 #include "pipe.c"
 #include "tty.c"
+#include "fs.c"
 #include "misc.c"
 
 static const duk_function_list_entry duv_funcs[] = {
@@ -56,6 +57,36 @@ static const duk_function_list_entry duv_funcs[] = {
   {"tty_set_mode", duv_tty_set_mode, 2},
   {"tty_reset_mode", duv_tty_reset_mode, 0},
   {"tty_get_winsize", duv_tty_get_winsize, 1},
+
+  // fs.c
+  {"fs_close", duv_fs_close, 2},
+  {"fs_open", duv_fs_open, 4},
+  {"fs_read", duv_fs_read, 4},
+  {"fs_unlink", duv_fs_unlink, 2},
+  {"fs_write", duv_fs_write, 4},
+  {"fs_mkdir", duv_fs_mkdir, 3},
+  {"fs_mkdtemp", duv_fs_mkdtemp, 2},
+  {"fs_rmdir", duv_fs_rmdir, 2},
+  {"fs_scandir", duv_fs_scandir, 2},
+  {"fs_scandir_next", duv_fs_scandir_next, 1},
+  {"fs_stat", duv_fs_stat, 2},
+  {"fs_fstat", duv_fs_fstat, 2},
+  {"fs_lstat", duv_fs_lstat, 2},
+  {"fs_rename", duv_fs_rename, 3},
+  {"fs_fsync", duv_fs_fsync, 2},
+  {"fs_fdatasync", duv_fs_fdatasync, 2},
+  {"fs_ftruncate", duv_fs_ftruncate, 3},
+  {"fs_sendfile", duv_fs_sendfile, 5},
+  {"fs_access", duv_fs_access, 3},
+  {"fs_chmod", duv_fs_chmod, 3},
+  {"fs_fchmod", duv_fs_fchmod, 3},
+  {"fs_utime", duv_fs_utime, 4},
+  {"fs_futime", duv_fs_futime, 4},
+  {"fs_link", duv_fs_link, 3},
+  {"fs_symlink", duv_fs_symlink, 4},
+  {"fs_readlink", duv_fs_readlink, 2},
+  {"fs_chown", duv_fs_chown, 4},
+  {"fs_fchown", duv_fs_fchown, 4},
 
   // misc.c
   {"guess_handle", duv_guess_handle, 1},
