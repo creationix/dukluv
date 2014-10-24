@@ -1,6 +1,8 @@
 "use strict";
 
-var stdout = require('../utils.js').stdout;
+var utils = require('../utils.js');
+var stdout = utils.stdout;
+var colorize = utils.colorize;
 
 exports.test = test;
 exports.errors = 0;
@@ -15,10 +17,11 @@ function assert(cond, message) {
 // Mini test framework
 function test(name, fn) {
   var cwd;
+  cleanup();
   try {
     cwd = uv.cwd();
     var expects = [];
-    print("\n\x1b[38;5;254mStarting test: \x1b[38;5;69m" + name + "\x1b[0m");
+    print("\nStarting test: " + colorize("highlight", name));
     fn(assert, function (fn, left) {
       left = left || 1;
       expects.push(fn);
@@ -47,11 +50,12 @@ function test(name, fn) {
     if (uv.cwd() !== cwd) {
       throw new Error("Test left cwd modified: " + cwd + " != " + uv.cwd());
     }
-    print("\x1b[38;5;46mPassed!\x1b[0m");
+    alert(colorize("success", "Passed!"));
   }
   catch (err) {
     exports.errors++;
-    alert("\x1b[38;5;196m" + err.stack + "\x1b[0m");
+    alert(colorize("failure", "Failed!"));
+    alert(colorize("error", err.stack));
   }
   finally {
     uv.chdir(cwd);
@@ -70,7 +74,7 @@ function cleanup() {
   }
   catch (err) {
     exports.errors++;
-    alert("\x1b[38;5;196m" + err.stack + "\x1b[0m");
+    alert(colorize("error", err.stack));
     cleanup();
   }
 }

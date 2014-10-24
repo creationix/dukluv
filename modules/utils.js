@@ -6,22 +6,24 @@ var width = uv.tty_get_winsize(stdout).width;
 exports.prettyPrint = prettyPrint;
 exports.dump = dump;
 exports.stdout = stdout;
+exports.color = color;
+exports.colorize = colorize;
 
 var quote, quote2, obracket, cbracket, obrace, cbrace, comma, colon;
 
-var theme = require('../theme-256.js');
+var theme = require('../theme-16.js');
 
-quote = colorize("quotes", '"', "text");
+quote = colorize("quotes", '"', "string");
 quote2 = colorize("quotes", '"');
-obracket = colorize("punc", '[');
-cbracket = colorize("punc", ']');
-obrace = colorize("punc", '{');
-cbrace = colorize("punc", '}');
-comma = colorize("punc", ',');
-colon = colorize("punc", ':');
+obracket = colorize("braces", '[');
+cbracket = colorize("braces", ']');
+obrace = colorize("braces", '{');
+cbrace = colorize("braces", '}');
+comma = colorize("sep", ',');
+colon = colorize("sep", ':');
 
 function color(color_name) {
- return "\x1b[" + (theme[color_name] || "0") + "m";
+ return "\x1b[" + (color_name ? theme[color_name] : "0") + "m";
 }
 
 function colorize(color_name, string, reset_name) {
@@ -33,43 +35,78 @@ function dump(value) {
   var seen = [];
   return dumper(value, 0);
   function dumper(value, depth) {
-    var type = typeof(value);
-    if (type === 'string') {
+    var type = typeof value;
+
+    if (type === "undefined") {
+      return colorize("undefined", "undefined");
+    }
+    if (value === null) {
+      return colorize("null", "null");
+    }
+    if (type === "boolean") {
+      return colorize("boolean", "" + value);
+    }
+    if (type === "number") {
+      return colorize("number", "" + value);
+    }
+    if (type === "string") {
       var str = JSON.stringify(value);
       return (quote + str.substring(1, str.length - 1) + quote2).
         replace(/(\\u[0-9a-f]{4}|\\["\\/bfnrt])/g, function (match) {
-          return colorize("escape", match, "text");
+          return colorize("escape", match, "string");
         });
     }
-    if (type === 'undefined' || value === null) {
-      return colorize("null", "" + value);
-    }
-    if (type === 'boolean') {
-      return colorize("boolean", "" + value);
-    }
-    if (type === 'number') {
-      return colorize("number", "" + value);
-    }
+    var info = Duktape.info(value);
     if (type === "function") {
-      return colorize("special", "[", "special2") +
-        "Function" + (value.name ? " " + value.name : "") +
-        colorize("special", "]");
+      var fname = value.name || info[1];
+      // Native CFunctions don't have a .prototype property.
+      if (value.prototype) {
+        return colorize("function", "[Function " + fname + "]");
+      }
+      return colorize("cfunction", "[Native " + fname + "]");
     }
-    if (type !== "object") {
-      return "" + value;
+    var fullName = Object.prototype.toString.call(value);
+    var name = fullName.substring(8, fullName.length - 1);
+    if (name === "RegExp") {
+      return colorize("regexp", "[RegExp " + value + "]");
     }
-    if (value instanceof RegExp) {
-      return colorize("regexp", "" + value);
+    if (name === "Thread") {
+      return colorize("thread", "[Thread " + info[1] + "]");
     }
+    if (name === "Buffer") {
+      // Fixed buffers have undefined for info[4]
+      if (info[4] === undefined) {
+        return colorize("buffer", "[Buffer " + info[1] + "]");
+      }
+      return colorize("dbuffer", "[Dynamic Buffer " + info[1] + "]");
+    }
+    if (name === "Pointer") {
+      return colorize("pointer", "[Pointer " + info[1] + "]");
+    }
+    if (name === "Error") {
+      return colorize("error", "[Error " + info[1] + "]");
+    }
+    if (name === "Date") {
+      return colorize("date", "[Date " + value + "]");
+    }
+    if (name === "String") {
+      return colorize("string", "[String " + JSON.stringify(value) + "]");
+    }
+    if (name === "Number") {
+      return colorize("number", "[Number " + value + "]");
+    }
+    if (name !== "Object" && name !== "Array" && name !== "global") {
+      return colorize("object", "[" + name + " " + info[1] + "]");
+    }
+
     var index = seen.indexOf(value);
     if (depth > 2 || index >= 0) {
-      return colorize("special", "[", "special2") +
-        (Array.isArray(value) ? "Array" : "Object") +
-        colorize("special", "]");
+      return colorize("object", "[" + name + " " + info[1] + "]");
     }
     seen.push(value);
+
     var parts, opener, closer;
-    if (Array.isArray(value)) {
+    if (name === "Array") {
       opener = obracket;
       closer = cbracket;
       parts = value.map(function (item) {

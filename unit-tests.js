@@ -12,13 +12,13 @@ test("simple timeout", function (assert, expect) {
 
   function ontimeout() {
     assert(this === timer);
-    print("timeout", timer);
+    p("timeout", timer);
     uv.close(timer, expect(onclosed));
   }
 
   function onclosed() {
     assert(this === timer);
-    print("closed", timer);
+    p("closed", timer);
   }
 });
 
@@ -30,14 +30,14 @@ test("simple interval", function (assert, expect) {
 
   function oninterval() {
     assert(this === timer);
-    print("interval", timer);
+    p("interval", timer);
     if (--count) { return; }
     uv.close(timer, expect(onclosed));
   }
 
   function onclosed() {
     assert(this === timer);
-    print("closed", timer);
+    p("closed", timer);
   }
 });
 
@@ -51,14 +51,14 @@ test("timeout with interval", function (asert, expect) {
   uv.timer_start(b, 100, 100, expect(oninterval, 2));
 
   function ontimeout() {
-    print("timeout", a);
+    p("timeout", a);
     uv.timer_stop(b);
     uv.close(a);
     uv.close(b);
   }
 
   function oninterval() {
-    print("interval", b);
+    p("interval", b);
   }
 
 });
@@ -71,7 +71,7 @@ test("shrinking interval", function (assert, expect) {
 
   function ontimeout() {
     var r = uv.timer_get_repeat(timer);
-    print("interval", timer, r);
+    p("interval", timer, r);
     if (r === 0) {
       uv.timer_set_repeat(timer, 8);
       uv.timer_again(timer);
@@ -198,6 +198,53 @@ test("uv.shutdown", function (assert, expect) {
     assert(this === pipe);
   }
 });
+
+test("pretty printer", function () {
+
+  p(global);
+
+  p({
+    numbers: [1,2,3],
+    undefined: undefined,
+    booleans: [true, false],
+    null: null,
+    string: "a string\nwith\0stuff",
+  });
+
+  p({
+    regexp: /abc*/,
+    native: print,
+    user: function user() {},
+    anonymous: function () {},
+  });
+
+  var timer = uv.new_timer();
+
+  p({
+    thread: new Duktape.Thread(test),
+    buffer: timer,
+    dynamic: new Duktape.Buffer("Hello"),
+    pointer: new Duktape.Pointer(p),
+    error: new Error("test"),
+    date: new Date(),
+    string: new String("Hello"),
+    number: new Number(42),
+  });
+
+  uv.close(timer);
+
+  p({
+    thread: Duktape.Thread(test),
+    dynamic: Duktape.Buffer("Hello"),
+    pointer: Duktape.Pointer(p),
+    error: Error("test"),
+    date: Date(),
+  });
+  p({name:"tim", age:32}, ["red", "blue", 1, 2, 3]);
+  p([[[[]]]], {a:{b:{c:{}}}});
+
+});
+
 
 var numErrors = require('modules/test.js').errors;
 if (numErrors) {
