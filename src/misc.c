@@ -38,7 +38,7 @@ static duk_ret_t duv_set_process_title(duk_context *ctx) {
 static duk_ret_t duv_resident_set_memory(duk_context *ctx) {
   size_t rss;
   duv_check(ctx, uv_resident_set_memory(&rss));
-  duk_push_uint(ctx, rss);
+  duk_push_number(ctx, rss);
   return 1;
 }
 
@@ -224,12 +224,12 @@ static duk_ret_t duv_chdir(duk_context *ctx) {
 }
 
 static duk_ret_t duv_get_total_memory(duk_context *ctx) {
-  duk_push_uint(ctx, uv_get_total_memory());
+  duk_push_number(ctx, uv_get_total_memory());
   return 1;
 }
 
 static duk_ret_t duv_hrtime(duk_context *ctx) {
-  duk_push_uint(ctx, uv_hrtime());
+  duk_push_number(ctx, uv_hrtime());
   return 1;
 }
 
