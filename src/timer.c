@@ -26,15 +26,9 @@ static void duv_timer_cb(uv_timer_t* handle) {
 
 static duk_ret_t duv_timer_start(duk_context *ctx) {
   uv_timer_t* handle = duv_require_timer(ctx, 0);
-  duv_handle_t* data = handle->data;
   uint64_t timeout = duk_require_uint(ctx, 1);
   uint64_t repeat = duk_require_uint(ctx, 2);
-  if (!duk_is_function(ctx, 3)) {
-    duk_error(ctx, DUK_ERR_TYPE_ERROR, "callback required");
-  }
-  duk_dup(ctx, 3);
-  data->callbacks[DUV_TIMEOUT] = duv_ref(ctx);
-
+  duv_require_callback(ctx, handle->data, DUV_TIMEOUT, 3);
   duv_check(ctx, uv_timer_start(handle, duv_timer_cb, timeout, repeat));
   return 0;
 }

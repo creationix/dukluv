@@ -31,7 +31,6 @@ static duv_req_t* duv_setup_req(duk_context *ctx, int callback_index) {
   duk_dup(ctx, callback_index);
   data->callback_ref = duv_ref(ctx);
   return data;
-
 }
 
 static duv_req_t* duv_cleanup_req(duk_context *ctx, duv_req_t *data) {
@@ -47,11 +46,23 @@ static void duv_error(duk_context *ctx, int status) {
 }
 
 static int duv_push_status(duk_context *ctx, int status) {
-  return duk_push_error_object(ctx, DUK_ERR_ERROR, "%s: %s", uv_err_name(status), uv_strerror(status));
+  if (status < 0) {
+    return duk_push_error_object(ctx, DUK_ERR_ERROR, "%s: %s", uv_err_name(status), uv_strerror(status));
+  }
+  duk_push_null(ctx);
+  return 0;
 }
 
 static void duv_check(duk_context *ctx, int status) {
   if (status < 0) duv_error(ctx, status);
+}
+
+static void duv_require_callback(duk_context *ctx, duv_handle_t *data, int type, int index) {
+  if (!duk_is_function(ctx, index)) {
+    duk_error(ctx, DUK_ERR_TYPE_ERROR, "callback required");
+  }
+  duk_dup(ctx, index);
+  data->callbacks[type] = duv_ref(ctx);
 }
 
 static void duv_emit_event(duk_context *ctx, duv_handle_t* data, duv_callback_id type, int nargs) {
