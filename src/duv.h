@@ -44,6 +44,8 @@
 #define DUV_FS_EVENT 1
 #define DUV_FS_POLL 1
 
+#include "schema.c"
+
 // Ref for userdata and event callbacks
 typedef struct {
   int ref;
@@ -55,6 +57,7 @@ typedef struct {
   int callback_ref; // ref for callback
   void* data; // extra data
 } duv_req_t;
+
 
 duk_ret_t dukopen_duv(duk_context *ctx);
 

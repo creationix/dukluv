@@ -175,10 +175,9 @@ static void duv_fs_cb(uv_fs_t* req) {
     duv_push_fs_result(ctx, req);
     nargs = 1;
   }
-  duv_fulfill_req(ctx, req->data, nargs);
+  duv_fulfill_req(ctx, (uv_req_t*)req, nargs);
   if (req->fs_type != UV_FS_SCANDIR) {
-    duv_cleanup_req(ctx, req->data);
-    req->data = NULL;
+    req->data = duv_cleanup_req(ctx, req->data);
     uv_fs_req_cleanup(req);
   }
 }

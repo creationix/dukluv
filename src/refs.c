@@ -17,7 +17,7 @@ static void duv_ref_setup(duk_context *ctx) {
 // like luaL_ref, but assumes storage in "refs" property of heap stash
 static int duv_ref(duk_context *ctx) {
   int ref;
-  if (duk_check_type(ctx, -1, DUK_TYPE_UNDEFINED)) {
+  if (duk_is_undefined(ctx, -1)) {
     duk_pop(ctx);
     return 0;
   }

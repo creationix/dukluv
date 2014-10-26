@@ -35,6 +35,9 @@ static const duk_function_list_entry duv_funcs[] = {
   {"read_start", duv_read_start, 2},
   {"read_stop", duv_read_stop, 1},
   {"write", duv_write, 2},
+  {"is_readable", duv_is_readable, 1},
+  {"is_writable", duv_is_writable, 1},
+  {"stream_set_blocking", duv_stream_set_blocking, 2},
 
   // tcp.c
   {"new_tcp", duv_new_tcp, 0},
@@ -42,7 +45,7 @@ static const duk_function_list_entry duv_funcs[] = {
   {"tcp_nodelay", duv_tcp_nodelay, 2},
   {"tcp_keepalive", duv_tcp_keepalive, 3},
   {"tcp_simultaneous_accepts", duv_tcp_simultaneous_accepts, 2},
-  {"tcp_bind", duv_tcp_bind, 4},
+  {"tcp_bind", duv_tcp_bind, 3},
   {"tcp_getpeername", duv_tcp_getpeername, 1},
   {"tcp_getsockname", duv_tcp_getsockname, 1},
   {"tcp_connect", duv_tcp_connect, 4},

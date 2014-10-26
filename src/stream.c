@@ -1,25 +1,25 @@
 #include "duv.h"
 #include <assert.h>
 
-static uv_stream_t* duv_require_stream(duk_context *ctx, int index) {
-  uv_stream_t* handle = duk_require_buffer(ctx, index, NULL);
-  if (handle->type != UV_TCP &&
-      handle->type != UV_TTY &&
-      handle->type != UV_NAMED_PIPE) {
-    duk_error(ctx, DUK_ERR_TYPE_ERROR, "Expected uv_stream_t subclass");
-  }
-  return handle;
-}
-
 static void duv_shutdown_cb(uv_shutdown_t* req, int status) {
   duk_context *ctx = req->handle->loop->data;
   duv_push_status(ctx, status);
   duv_fulfill_req(ctx, (uv_req_t*)req, 1);
+  req->data = duv_cleanup_req(ctx, req->data);
 }
 
 static duk_ret_t duv_shutdown(duk_context *ctx) {
-  uv_stream_t* handle = duv_require_stream(ctx, 0);
-  uv_shutdown_t* req = duk_push_fixed_buffer(ctx, sizeof(*req));
+  uv_stream_t* handle;
+  uv_shutdown_t* req;
+
+  duv_check_args(ctx, (const duv_schema_entry[]) {
+    {"stream", duv_is_stream},
+    {"next", duv_is_continuation},
+    {NULL}
+  });
+
+  handle = duk_to_fixed_buffer(ctx, 0, NULL);
+  req = duk_push_fixed_buffer(ctx, sizeof(*req));
   duv_check(ctx, uv_shutdown(req, handle, duv_shutdown_cb));
   req->data = duv_setup_req(ctx, 1);
   return 1;
@@ -32,16 +32,35 @@ static void duv_connection_cb(uv_stream_t* handle, int status) {
 }
 
 static duk_ret_t duv_listen(duk_context *ctx) {
-  uv_stream_t* handle = duv_require_stream(ctx, 0);
-  int backlog = duk_require_int(ctx, 1);
-  duv_require_callback(ctx, handle->data, DUV_CONNECTION, 2);
+  uv_stream_t* handle;
+  int backlog;
+
+  duv_check_args(ctx, (const duv_schema_entry[]) {
+    {"stream", duv_is_stream},
+    {"backlog", duk_is_number},
+    {"onConnection", duk_is_callable},
+    {NULL}
+  });
+
+  handle = duk_to_fixed_buffer(ctx, 0, NULL);
+  backlog = duk_to_number(ctx, 1);
   duv_check(ctx, uv_listen(handle, backlog, duv_connection_cb));
+  duv_store_handler(ctx, handle->data, DUV_CONNECTION, 2);
   return 0;
 }
 
 static duk_ret_t duv_accept(duk_context *ctx) {
-  uv_stream_t* server = duv_require_stream(ctx, 0);
-  uv_stream_t* client = duv_require_stream(ctx, 1);
+  uv_stream_t* server;
+  uv_stream_t* client;
+
+  duv_check_args(ctx, (const duv_schema_entry[]) {
+    {"server", duv_is_stream},
+    {"client", duv_is_stream},
+    {NULL}
+  });
+
+  server = duk_to_fixed_buffer(ctx, 0, NULL);
+  client = duk_to_fixed_buffer(ctx, 1, NULL);
   duv_check(ctx, uv_accept(server, client));
   return 0;
 }
@@ -78,14 +97,29 @@ static void duv_read_cb(uv_stream_t* handle, ssize_t nread, const uv_buf_t* buf)
 }
 
 static duk_ret_t duv_read_start(duk_context *ctx) {
-  uv_stream_t* handle = duv_require_stream(ctx, 0);
-  duv_require_callback(ctx, handle->data, DUV_READ, 1);
+  uv_stream_t* handle;
+
+  duv_check_args(ctx, (const duv_schema_entry[]) {
+    {"stream", duv_is_stream},
+    {"onread", duk_is_callable},
+    {NULL}
+  });
+
+  handle = duk_to_fixed_buffer(ctx, 0, NULL);
   duv_check(ctx, uv_read_start(handle, duv_alloc_cb, duv_read_cb));
+  duv_store_handler(ctx, handle->data, DUV_READ, 1);
   return 0;
 }
 
 static duk_ret_t duv_read_stop(duk_context *ctx) {
-  uv_stream_t* handle = duv_require_stream(ctx, 0);
+  uv_stream_t* handle;
+
+  duv_check_args(ctx, (const duv_schema_entry[]) {
+    {"stream", duv_is_stream},
+    {NULL}
+  });
+
+  handle = duk_to_fixed_buffer(ctx, 0, NULL);
   duv_check(ctx, uv_read_stop(handle));
   return 0;
 }
@@ -93,21 +127,25 @@ static duk_ret_t duv_read_stop(duk_context *ctx) {
 static void duv_write_cb(uv_write_t* req, int status) {
   duk_context *ctx = req->handle->loop->data;
   duv_push_status(ctx, status);
-  duv_fulfill_req(ctx, req->data, 1);
+  duv_fulfill_req(ctx, (uv_req_t*)req, 1);
   req->data = duv_cleanup_req(ctx, req->data);
 }
 
 static duk_ret_t duv_write(duk_context *ctx) {
-  uv_stream_t* handle = duv_require_stream(ctx, 0);
+  uv_stream_t* handle;
   uv_buf_t buf;
-  int ret;
-  buf.base = (char*) duk_require_lstring(ctx, 1, &buf.len);
+
+  duv_check_args(ctx, (const duv_schema_entry[]){
+    {"stream", duv_is_stream},
+    {"data", duv_is_data},
+    {"next", duv_is_continuation},
+    {NULL}
+  });
+
+  handle = duk_to_fixed_buffer(ctx, 0, NULL);
+  buf.base = (char*) duk_to_lstring(ctx, 1, &buf.len);
   uv_write_t* req = duk_push_fixed_buffer(ctx, sizeof(*req));
-  ret = uv_write(req, handle, &buf, 1, duv_write_cb);
-  if (ret < 0) {
-    duk_pop(ctx);
-    duv_error(ctx, ret);
-  }
+  duv_check(ctx, uv_write(req, handle, &buf, 1, duv_write_cb));
   req->data = duv_setup_req(ctx, 2);
   return 1;
 }
@@ -142,26 +180,43 @@ static duk_ret_t duv_write(duk_context *ctx) {
 //   return 1;
 // }
 
-// static duk_ret_t duv_is_readable(duk_context *ctx) {
-//   uv_stream_t* handle = duv_require_stream(L, 1);
-//   lua_pushboolean(L, uv_is_readable(handle));
-//   return 1;
-// }
+static duk_ret_t duv_is_readable(duk_context *ctx) {
+  uv_stream_t* handle;
 
-// static duk_ret_t duv_is_writable(duk_context *ctx) {
-//   uv_stream_t* handle = duv_require_stream(L, 1);
-//   lua_pushboolean(L, uv_is_writable(handle));
-//   return 1;
-// }
+  duv_check_args(ctx, (const duv_schema_entry[]){
+    {"stream", duv_is_stream},
+    {NULL}
+  });
 
-// static duk_ret_t duv_stream_set_blocking(duk_context *ctx) {
-//   uv_stream_t* handle = duv_require_stream(L, 1);
-//   int blocking, ret;
-//   luaL_checktype(L, 2, LUA_TBOOLEAN);
-//   blocking = lua_toboolean(L, 2);
-//   ret = uv_stream_set_blocking(handle, blocking);
-//   if (ret < 0) return duv_error(L, ret);
-//   lua_pushinteger(L, ret);
-//   return 1;
-// }
+  handle = duk_to_fixed_buffer(ctx, 0, NULL);
+  duk_push_boolean(ctx, uv_is_readable(handle));
+  return 1;
+}
+
+static duk_ret_t duv_is_writable(duk_context *ctx) {
+  duv_check_args(ctx, (const duv_schema_entry[]){
+    {"stream", duv_is_stream},
+    {NULL}
+  });
+
+  uv_stream_t* handle = duk_to_fixed_buffer(ctx, 0, NULL);
+  duk_push_boolean(ctx, uv_is_writable(handle));
+  return 1;
+}
+
+static duk_ret_t duv_stream_set_blocking(duk_context *ctx) {
+  uv_stream_t* handle;
+  int blocking;
+
+  duv_check_args(ctx, (const duv_schema_entry[]){
+    {"stream", duv_is_stream},
+    {"isblocking", duk_is_boolean},
+    {NULL}
+  });
+
+  handle = duk_to_fixed_buffer(ctx, 0, NULL);
+  blocking = duk_to_boolean(ctx, 1);
+  duv_check(ctx, uv_stream_set_blocking(handle, blocking));
+  return 0;
+}
 

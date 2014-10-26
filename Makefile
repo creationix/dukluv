@@ -1,5 +1,5 @@
 dukluv: build/Makefile
-	cmake --build build --config Release
+	cmake --build build --config Debug
 
 build/Makefile: CMakeLists.txt uv.cmake
 	cmake -H. -Bbuild
