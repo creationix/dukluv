@@ -50,7 +50,7 @@ static duk_bool_t duv_is_tcp(duk_context* ctx, duk_idx_t index) {
 
 
 static duk_bool_t duv_is_data(duk_context* ctx, duk_idx_t index) {
-  return duk_is_string(ctx, index) || duk_is_buffer(ctx, index);
+  return duk_is_string(ctx, index) || duk_is_dynamic(ctx, index);
 }
 
 static duk_bool_t duv_is_continuation(duk_context* ctx, duk_idx_t index) {

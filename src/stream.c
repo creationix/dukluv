@@ -80,7 +80,7 @@ static void duv_read_cb(uv_stream_t* handle, ssize_t nread, const uv_buf_t* buf)
   if (nread >= 0) {
     char* out;
     duk_push_null(ctx);
-    out = duk_push_fixed_buffer(ctx, nread);
+    out = duk_push_dynamic_buffer(ctx, nread);
     memcpy(out, buf->base, nread);
   }
 

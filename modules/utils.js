@@ -76,9 +76,13 @@ function dump(value) {
     if (name === "Buffer") {
       // Fixed buffers have undefined for info[4]
       if (info[4] === undefined) {
-        return colorize("buffer", "[Buffer " + info[1] + "]");
+        return colorize("buffer", "[CData " + info[1] + "]");
       }
-      return colorize("dbuffer", "[Dynamic Buffer " + info[1] + "]");
+      var preview = Array.prototype.slice.call(value, 0, 10).map(function (byte) {
+        return byte < 16 ? "0" + byte.toString(16) : byte.toString(16);
+      }).join(" ");
+      if (value.length > 10) { preview += "..."; }
+      return colorize("dbuffer", "[Buffer " + preview + "]");
     }
     if (name === "Pointer") {
       return colorize("pointer", "[Pointer " + info[1] + "]");

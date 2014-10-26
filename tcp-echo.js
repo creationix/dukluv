@@ -15,7 +15,7 @@ uv.listen(server, 128, function (err) {
   uv.accept(server, socket);
   uv.read_start(socket, function (err, chunk) {
     if (err) { throw err; }
-    p("socket.onread", chunk, ""+chunk, Array.prototype.slice.call(chunk));
+    p("socket.onread", chunk);
     if (chunk) {
       p("socket.write", chunk);
       uv.write(socket, chunk);
@@ -41,7 +41,7 @@ uv.tcp_connect(client, "127.0.0.1", 1337, function (err) {
   p("client.onconnect");
   uv.read_start(client, function (err, chunk) {
     if (err) { throw err; }
-    p("client.onread", chunk, ""+chunk, Array.prototype.slice.call(chunk));
+    p("client.onread", chunk);
     if (chunk) {
       p("client.shutdown");
       uv.shutdown(client);
@@ -51,16 +51,16 @@ uv.tcp_connect(client, "127.0.0.1", 1337, function (err) {
       uv.close(client);
     }
   });
-  p("client.write", "Hello Server\n");
-  uv.write(client, "Hello Server\n");
-  var buffer = Duktape.Buffer(5);
-  buffer[0] = 0;
-  buffer[1] = 10;
-  buffer[2] = 20;
-  buffer[3] = 30;
-  buffer[4] = 40;
+  var buffer = Duktape.Buffer(5, true);
+  buffer[0] = 0x10;
+  buffer[1] = 0x20;
+  buffer[2] = 0x30;
+  buffer[3] = 0x40;
+  buffer[4] = 0x50;
   p("client.write", buffer);
   uv.write(client, buffer);
+  p("client.write", "Hello Server\n");
+  uv.write(client, "Hello Server\n");
 });
 
 
