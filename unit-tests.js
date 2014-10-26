@@ -177,28 +177,6 @@ test("uv.hrtime", function () {
   p({"hrtime": time});
 });
 
-test("uv.shutdown", function (assert, expect) {
-  var pipe = uv.new_pipe(true);
-  uv.pipe_open(pipe, 0);
-  var req = uv.shutdown(pipe, expect(onshutdown));
-  p({
-    pipe: pipe,
-    req: req,
-  });
-
-  function onshutdown(err) {
-    p("onshutdown", {err:err,this:this});
-    assert(this === req);
-    assert(!err, err);
-    uv.close(pipe, expect(onclosed));
-  }
-
-  function onclosed() {
-    p("onclosed", {this:this});
-    assert(this === pipe);
-  }
-});
-
 test("pretty printer", function () {
 
   p(global);
