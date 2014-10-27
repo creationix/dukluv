@@ -11,7 +11,7 @@ exports.colorize = colorize;
 
 var quote, quote2, obracket, cbracket, obrace, cbrace, comma, colon;
 
-var theme = require('../theme-256.js');
+var theme = require('./theme-256.js');
 
 quote = colorize("quotes", '"', "string");
 quote2 = colorize("quotes", '"');

@@ -1,6 +1,6 @@
 "use strict";
 
-var utils = require('../utils.js');
+var utils = require('./utils.js');
 var stdout = utils.stdout;
 var colorize = utils.colorize;
 

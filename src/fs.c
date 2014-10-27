@@ -93,7 +93,7 @@ static int duv_string_to_flags(duk_context *ctx, const char* string) {
   if (strcmp(string, "w+") == 0) return O_CREAT | O_TRUNC | O_RDWR;
   if (strcmp(string, "a") == 0) return O_APPEND | O_CREAT | O_WRONLY;
   if (strcmp(string, "a+") == 0) return O_APPEND | O_CREAT | O_RDWR;
-  duk_error(ctx, "Unknown file open flag '%s'", string);
+  duk_error(ctx, DUK_ERR_TYPE_ERROR, "Unknown file open flag '%s'", string);
 }
 
 static void duv_push_error_result(duk_context *ctx, uv_fs_t* req) {
