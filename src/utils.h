@@ -14,5 +14,6 @@ static void duv_check(duk_context *ctx, int status);
 static void duv_store_handler(duk_context *ctx, duv_handle_t *data, int type, int index);
 static void duv_emit_event(duk_context *ctx, duv_handle_t* data, duv_callback_id type, int nargs);
 static void duv_fulfill_req(duk_context *ctx, uv_req_t* req, int nargs);
+static void duv_get_data(duk_context *ctx, int index, uv_buf_t* buf);
 
 #endif

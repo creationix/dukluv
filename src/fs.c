@@ -439,10 +439,10 @@ static duk_ret_t duv_fs_symlink(duk_context *ctx) {
   uv_fs_t* req;
   if (duk_is_object(ctx, 2)) {
     duk_get_prop_string(ctx, 2, "dir");
-    if (duk_to_boolean(ctx, -1)) flags |= UV_FS_SYMLINK_DIR;
+    if (duk_get_boolean(ctx, -1)) flags |= UV_FS_SYMLINK_DIR;
     duk_pop(ctx);
     duk_get_prop_string(ctx, 2, "junction");
-    if (duk_to_boolean(ctx, -1)) flags |= UV_FS_SYMLINK_JUNCTION;
+    if (duk_get_boolean(ctx, -1)) flags |= UV_FS_SYMLINK_JUNCTION;
     duk_pop(ctx);
   }
   req = duk_push_fixed_buffer(ctx, sizeof(*req));

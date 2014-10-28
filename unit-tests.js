@@ -204,6 +204,7 @@ test("pretty printer", function () {
     dynamic: new Duktape.Buffer("Hello"),
     pointer: new Duktape.Pointer(p),
     error: new Error("test"),
+    typeError: new TypeError("test2"),
     date: new Date(),
     string: new String("Hello"),
     number: new Number(42),
@@ -216,6 +217,7 @@ test("pretty printer", function () {
     dynamic: Duktape.Buffer("Hello"),
     pointer: Duktape.Pointer(p),
     error: Error("test"),
+    typeError: TypeError("test2"),
     date: Date(),
   });
   p({name:"tim", age:32}, ["red", "blue", 1, 2, 3]);

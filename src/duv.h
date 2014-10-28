@@ -49,11 +49,13 @@
 // Ref for userdata and event callbacks
 typedef struct {
   int ref;
+  int context;
   int callbacks[2];
 } duv_handle_t;
 
 typedef struct {
   int req_ref; // ref for uv_req_t's userdata
+  int context;
   int callback_ref; // ref for callback
   void* data; // extra data
 } duv_req_t;

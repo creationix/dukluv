@@ -18,7 +18,7 @@ static duk_ret_t duv_shutdown(duk_context *ctx) {
     {NULL}
   });
 
-  handle = duk_to_fixed_buffer(ctx, 0, NULL);
+  handle = duk_get_buffer(ctx, 0, NULL);
   req = duk_push_fixed_buffer(ctx, sizeof(*req));
   duv_check(ctx, uv_shutdown(req, handle, duv_shutdown_cb));
   req->data = duv_setup_req(ctx, 1);
@@ -42,8 +42,8 @@ static duk_ret_t duv_listen(duk_context *ctx) {
     {NULL}
   });
 
-  handle = duk_to_fixed_buffer(ctx, 0, NULL);
-  backlog = duk_to_number(ctx, 1);
+  handle = duk_get_buffer(ctx, 0, NULL);
+  backlog = duk_get_number(ctx, 1);
   duv_check(ctx, uv_listen(handle, backlog, duv_connection_cb));
   duv_store_handler(ctx, handle->data, DUV_CONNECTION, 2);
   return 0;
@@ -59,8 +59,8 @@ static duk_ret_t duv_accept(duk_context *ctx) {
     {NULL}
   });
 
-  server = duk_to_fixed_buffer(ctx, 0, NULL);
-  client = duk_to_fixed_buffer(ctx, 1, NULL);
+  server = duk_get_buffer(ctx, 0, NULL);
+  client = duk_get_buffer(ctx, 1, NULL);
   duv_check(ctx, uv_accept(server, client));
   return 0;
 }
@@ -74,13 +74,10 @@ static void duv_alloc_cb(uv_handle_t* handle, size_t suggested_size, uv_buf_t* b
 static void duv_read_cb(uv_stream_t* handle, ssize_t nread, const uv_buf_t* buf) {
   duk_context *ctx = handle->loop->data;
 
-  duv_handle_t* data = handle->data;
-  duv_push_ref(ctx, data->ref);
-
   if (nread >= 0) {
     char* out;
     duk_push_null(ctx);
-    out = duk_push_dynamic_buffer(ctx, nread);
+    out = duk_push_fixed_buffer(ctx, nread);
     memcpy(out, buf->base, nread);
   }
 
@@ -107,7 +104,7 @@ static duk_ret_t duv_read_start(duk_context *ctx) {
     {NULL}
   });
 
-  handle = duk_to_fixed_buffer(ctx, 0, NULL);
+  handle = duk_get_buffer(ctx, 0, NULL);
   duv_check(ctx, uv_read_start(handle, duv_alloc_cb, duv_read_cb));
   duv_store_handler(ctx, handle->data, DUV_READ, 1);
   return 0;
@@ -121,7 +118,7 @@ static duk_ret_t duv_read_stop(duk_context *ctx) {
     {NULL}
   });
 
-  handle = duk_to_fixed_buffer(ctx, 0, NULL);
+  handle = duk_get_buffer(ctx, 0, NULL);
   duv_check(ctx, uv_read_stop(handle));
   return 0;
 }
@@ -136,6 +133,7 @@ static void duv_write_cb(uv_write_t* req, int status) {
 static duk_ret_t duv_write(duk_context *ctx) {
   uv_stream_t* handle;
   uv_buf_t buf;
+  uv_write_t* req;
 
   duv_check_args(ctx, (const duv_schema_entry[]){
     {"stream", duv_is_stream},
@@ -144,9 +142,9 @@ static duk_ret_t duv_write(duk_context *ctx) {
     {NULL}
   });
 
-  handle = duk_to_fixed_buffer(ctx, 0, NULL);
-  buf.base = (char*) duk_to_lstring(ctx, 1, &buf.len);
-  uv_write_t* req = duk_push_fixed_buffer(ctx, sizeof(*req));
+  handle = duk_get_buffer(ctx, 0, NULL);
+  duv_get_data(ctx, 1, &buf);
+  req = duk_push_fixed_buffer(ctx, sizeof(*req));
   duv_check(ctx, uv_write(req, handle, &buf, 1, duv_write_cb));
   req->data = duv_setup_req(ctx, 2);
   return 1;
@@ -190,7 +188,7 @@ static duk_ret_t duv_is_readable(duk_context *ctx) {
     {NULL}
   });
 
-  handle = duk_to_fixed_buffer(ctx, 0, NULL);
+  handle = duk_get_buffer(ctx, 0, NULL);
   duk_push_boolean(ctx, uv_is_readable(handle));
   return 1;
 }
@@ -201,7 +199,7 @@ static duk_ret_t duv_is_writable(duk_context *ctx) {
     {NULL}
   });
 
-  uv_stream_t* handle = duk_to_fixed_buffer(ctx, 0, NULL);
+  uv_stream_t* handle = duk_get_buffer(ctx, 0, NULL);
   duk_push_boolean(ctx, uv_is_writable(handle));
   return 1;
 }
@@ -216,8 +214,8 @@ static duk_ret_t duv_stream_set_blocking(duk_context *ctx) {
     {NULL}
   });
 
-  handle = duk_to_fixed_buffer(ctx, 0, NULL);
-  blocking = duk_to_boolean(ctx, 1);
+  handle = duk_get_buffer(ctx, 0, NULL);
+  blocking = duk_get_boolean(ctx, 1);
   duv_check(ctx, uv_stream_set_blocking(handle, blocking));
   return 0;
 }

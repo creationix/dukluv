@@ -47,6 +47,7 @@ static duk_ret_t duv_main(duk_context *ctx) {
   duk_pop(ctx);
 
   duk_eval_file_noresult(ctx, path);
+  uv_run(&loop, UV_RUN_DEFAULT);
 
   return 0;
 
@@ -77,7 +78,7 @@ int main(int argc, char *argv[]) {
     fprintf(stderr, "\nUncaught Exception:\n");
     if (duk_is_object(ctx, -1)) {
       duk_get_prop_string(ctx, -1, "stack");
-      fprintf(stderr, "\n%s\n\n", duk_to_string(ctx, -1));
+      fprintf(stderr, "\n%s\n\n", duk_get_string(ctx, -1));
       duk_pop(ctx);
     }
     else {

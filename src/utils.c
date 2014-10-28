@@ -8,6 +8,8 @@ static uv_loop_t* duv_loop(duk_context *ctx) {
 
 static duv_handle_t* duv_setup_handle(duk_context *ctx) {
   duv_handle_t* data = duk_alloc(ctx, sizeof(*data));
+  duk_push_this(ctx);
+  data->context = duv_ref(ctx);
   duk_dup(ctx, -1);
   data->ref = duv_ref(ctx);
   data->callbacks[0] = 0;
@@ -25,6 +27,8 @@ static duv_handle_t* duv_cleanup_handle(duk_context *ctx, duv_handle_t* data) {
 
 static duv_req_t* duv_setup_req(duk_context *ctx, int callback_index) {
   duv_req_t* data = duk_alloc(ctx, sizeof(*data));
+  duk_push_this(ctx);
+  data->context = duv_ref(ctx);
   duk_dup(ctx, -1);
   data->req_ref = duv_ref(ctx);
   if (duk_is_callable(ctx, callback_index)) {
@@ -76,7 +80,7 @@ static void duv_emit_event(duk_context *ctx, duv_handle_t* data, duv_callback_id
     if (nargs) {
       duk_insert(ctx, -1 - nargs);
     }
-    duv_push_ref(ctx, data->ref);
+    duv_push_ref(ctx, data->context);
     if (nargs) {
       duk_insert(ctx, -1 - nargs);
     }
@@ -93,10 +97,21 @@ static void duv_fulfill_req(duk_context *ctx, uv_req_t* req, int nargs) {
   if (data->callback_ref) {
     duv_push_ref(ctx, data->callback_ref);
     if (nargs) duk_insert(ctx, -1 - nargs);
-    duk_call(ctx, nargs);
+    duv_push_ref(ctx, data->context);
+    if (nargs) duk_insert(ctx, -1 - nargs);
+    duk_call_method(ctx, nargs);
     duk_pop(ctx);
   }
   else if (nargs) {
     duk_pop_n(ctx, nargs);
+  }
+}
+
+static void duv_get_data(duk_context *ctx, int index, uv_buf_t* buf) {
+  if (duk_is_string(ctx, index)) {
+    buf->base = (char*) duk_get_lstring(ctx, index, &buf->len);
+  }
+  else {
+    buf->base = duk_get_buffer(ctx, index, &buf->len);
   }
 }

@@ -23,8 +23,8 @@ static duk_ret_t duv_tcp_open(duk_context *ctx) {
     {NULL}
   });
 
-  handle = duk_to_fixed_buffer(ctx, 0, NULL);
-  sock = duk_to_number(ctx, 1);
+  handle = duk_get_buffer(ctx, 0, NULL);
+  sock = duk_get_number(ctx, 1);
   duv_check(ctx, uv_tcp_open(handle, sock));
   return 0;
 }
@@ -39,8 +39,8 @@ static duk_ret_t duv_tcp_nodelay(duk_context *ctx) {
     {NULL}
   });
 
-  handle = duk_to_fixed_buffer(ctx, 0, NULL);
-  enable = duk_to_boolean(ctx, 1);
+  handle = duk_get_buffer(ctx, 0, NULL);
+  enable = duk_get_boolean(ctx, 1);
   duv_check(ctx, uv_tcp_nodelay(handle, enable));
   return 0;
 }
@@ -56,9 +56,9 @@ static duk_ret_t duv_tcp_keepalive(duk_context *ctx) {
     {NULL}
   });
 
-  handle = duk_to_fixed_buffer(ctx, 0, NULL);
-  enable = duk_to_boolean(ctx, 1);
-  delay = duk_to_number(ctx, 2);
+  handle = duk_get_buffer(ctx, 0, NULL);
+  enable = duk_get_boolean(ctx, 1);
+  delay = duk_get_number(ctx, 2);
   duv_check(ctx, uv_tcp_keepalive(handle, enable, delay));
   return 0;
 }
@@ -73,8 +73,8 @@ static duk_ret_t duv_tcp_simultaneous_accepts(duk_context *ctx) {
     {NULL}
   });
 
-  handle = duk_to_fixed_buffer(ctx, 0, NULL);
-  enable = duk_to_boolean(ctx, 1);
+  handle = duk_get_buffer(ctx, 0, NULL);
+  enable = duk_get_boolean(ctx, 1);
   duv_check(ctx, uv_tcp_simultaneous_accepts(handle, enable));
   return 0;
 }
@@ -92,9 +92,9 @@ static duk_ret_t duv_tcp_bind(duk_context *ctx) {
     {NULL}
   });
 
-  handle = duk_to_fixed_buffer(ctx, 0, NULL);
-  host = duk_to_string(ctx, 1);
-  port = duk_to_number(ctx, 2);
+  handle = duk_get_buffer(ctx, 0, NULL);
+  host = duk_get_string(ctx, 1);
+  port = duk_get_number(ctx, 2);
   flags = 0;
   if (uv_ip4_addr(host, port, (struct sockaddr_in*)&addr) &&
       uv_ip6_addr(host, port, (struct sockaddr_in6*)&addr)) {
@@ -136,7 +136,7 @@ static duk_ret_t duv_tcp_getsockname(duk_context *ctx) {
     {NULL}
   });
 
-  handle = duk_to_fixed_buffer(ctx, 0, NULL);
+  handle = duk_get_buffer(ctx, 0, NULL);
   addrlen = sizeof(address);
   duv_check(ctx, uv_tcp_getsockname(handle, (struct sockaddr*)&address, &addrlen));
   duv_push_sockaddr(ctx, &address, addrlen);
@@ -153,7 +153,7 @@ static duk_ret_t duv_tcp_getpeername(duk_context *ctx) {
     {NULL}
   });
 
-  handle = duk_to_fixed_buffer(ctx, 0, NULL);
+  handle = duk_get_buffer(ctx, 0, NULL);
   addrlen = sizeof(address);
   duv_check(ctx, uv_tcp_getpeername(handle, (struct sockaddr*)&address, &addrlen));
   duv_push_sockaddr(ctx, &address, addrlen);
@@ -182,16 +182,16 @@ static duk_ret_t duv_tcp_connect(duk_context *ctx) {
     {NULL}
   });
 
-  handle = duk_to_fixed_buffer(ctx, 0, NULL);
-  host = duk_to_string(ctx, 1);
-  port = duk_to_number(ctx, 2);
+  handle = duk_get_buffer(ctx, 0, NULL);
+  host = duk_get_string(ctx, 1);
+  port = duk_get_number(ctx, 2);
   flags = 0;
   if (uv_ip4_addr(host, port, (struct sockaddr_in*)&addr) &&
       uv_ip6_addr(host, port, (struct sockaddr_in6*)&addr)) {
     duk_error(ctx, DUK_ERR_TYPE_ERROR, "Invalid IP address or port");
   }
 
-  handle = duk_to_fixed_buffer(ctx, 0, NULL);
+  handle = duk_get_buffer(ctx, 0, NULL);
   req = duk_push_fixed_buffer(ctx, sizeof(*req));
   duv_check(ctx,
     uv_tcp_connect(req, handle, (struct sockaddr*)&addr, duv_connect_cb));

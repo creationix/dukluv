@@ -3,6 +3,7 @@
 #include "refs.c"
 #include "utils.c"
 #include "loop.c"
+#include "req.c"
 #include "handle.c"
 #include "timer.c"
 #include "stream.c"
@@ -16,6 +17,9 @@ static const duk_function_list_entry duv_funcs[] = {
   // loop.c
   {"run", duv_run, 0},
   {"walk", duv_walk, 1},
+
+  // req.c
+  {"cancel", duv_cancel, 1},
 
   // handle.c
   {"close", duv_close, 2},
@@ -34,7 +38,7 @@ static const duk_function_list_entry duv_funcs[] = {
   {"accept", duv_accept, 2},
   {"read_start", duv_read_start, 2},
   {"read_stop", duv_read_stop, 1},
-  {"write", duv_write, 2},
+  {"write", duv_write, 3},
   {"is_readable", duv_is_readable, 1},
   {"is_writable", duv_is_writable, 1},
   {"stream_set_blocking", duv_stream_set_blocking, 2},

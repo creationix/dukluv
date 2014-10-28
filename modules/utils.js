@@ -2,6 +2,8 @@
 
 var stdout = uv.new_tty(1, false);
 var width = uv.tty_get_winsize(stdout).width;
+var Handle = require('./classes.js').Handle;
+var Req = require('./classes.js').Req;
 
 exports.prettyPrint = prettyPrint;
 exports.dump = dump;
@@ -74,21 +76,21 @@ function dump(value) {
       return colorize("thread", "[Thread " + info[1] + "]");
     }
     if (name === "Buffer") {
-      // Fixed buffers have undefined for info[4]
-      if (info[4] === undefined) {
-        return colorize("buffer", "[CData " + info[1] + "]");
-      }
       var preview = Array.prototype.slice.call(value, 0, 10).map(function (byte) {
         return byte < 16 ? "0" + byte.toString(16) : byte.toString(16);
       }).join(" ");
       if (value.length > 10) { preview += "..."; }
-      return colorize("dbuffer", "[Buffer " + preview + "]");
+      // Fixed buffers have undefined for info[4]
+      if (info[4] === undefined) {
+        return colorize("buffer", "[Buffer " + preview + "]");
+      }
+      return colorize("dbuffer", "[Dynamic Buffer " + preview + "]");
     }
     if (name === "Pointer") {
       return colorize("pointer", "[Pointer " + info[1] + "]");
     }
     if (name === "Error") {
-      return colorize("error", "[Error " + info[1] + "]");
+      return colorize("error", "[" + value.constructor.name + " " + value.message + "]");
     }
     if (name === "Date") {
       return colorize("date", "[Date " + value + "]");
@@ -98,6 +100,9 @@ function dump(value) {
     }
     if (name === "Number") {
       return colorize("number", "[Number " + value + "]");
+    }
+    if (value instanceof Handle || value instanceof Req) {
+      return colorize("object", "[" + value.constructor.name + " " + info[1] + "]");
     }
     if (name !== "Object" && name !== "Array" && name !== "global") {
       return colorize("object", "[" + name + " " + info[1] + "]");
