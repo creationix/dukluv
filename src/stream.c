@@ -1,5 +1,4 @@
 #include "duv.h"
-#include <assert.h>
 
 static void duv_shutdown_cb(uv_shutdown_t* req, int status) {
   duk_context *ctx = req->handle->loop->data;
@@ -8,7 +7,7 @@ static void duv_shutdown_cb(uv_shutdown_t* req, int status) {
   req->data = duv_cleanup_req(ctx, req->data);
 }
 
-static duk_ret_t duv_shutdown(duk_context *ctx) {
+duk_ret_t duv_shutdown(duk_context *ctx) {
   uv_stream_t* handle;
   uv_shutdown_t* req;
 
@@ -31,7 +30,7 @@ static void duv_connection_cb(uv_stream_t* handle, int status) {
   duv_emit_event(ctx, handle->data, DUV_CONNECTION, 1);
 }
 
-static duk_ret_t duv_listen(duk_context *ctx) {
+duk_ret_t duv_listen(duk_context *ctx) {
   uv_stream_t* handle;
   int backlog;
 
@@ -49,7 +48,7 @@ static duk_ret_t duv_listen(duk_context *ctx) {
   return 0;
 }
 
-static duk_ret_t duv_accept(duk_context *ctx) {
+duk_ret_t duv_accept(duk_context *ctx) {
   uv_stream_t* server;
   uv_stream_t* client;
 
@@ -95,7 +94,7 @@ static void duv_read_cb(uv_stream_t* handle, ssize_t nread, const uv_buf_t* buf)
   duv_emit_event(ctx, handle->data, DUV_READ, 2);
 }
 
-static duk_ret_t duv_read_start(duk_context *ctx) {
+duk_ret_t duv_read_start(duk_context *ctx) {
   uv_stream_t* handle;
 
   duv_check_args(ctx, (const duv_schema_entry[]) {
@@ -110,7 +109,7 @@ static duk_ret_t duv_read_start(duk_context *ctx) {
   return 0;
 }
 
-static duk_ret_t duv_read_stop(duk_context *ctx) {
+duk_ret_t duv_read_stop(duk_context *ctx) {
   uv_stream_t* handle;
 
   duv_check_args(ctx, (const duv_schema_entry[]) {
@@ -130,7 +129,7 @@ static void duv_write_cb(uv_write_t* req, int status) {
   req->data = duv_cleanup_req(ctx, req->data);
 }
 
-static duk_ret_t duv_write(duk_context *ctx) {
+duk_ret_t duv_write(duk_context *ctx) {
   uv_stream_t* handle;
   uv_buf_t buf;
   uv_write_t* req;
@@ -180,7 +179,7 @@ static duk_ret_t duv_write(duk_context *ctx) {
 //   return 1;
 // }
 
-static duk_ret_t duv_is_readable(duk_context *ctx) {
+duk_ret_t duv_is_readable(duk_context *ctx) {
   uv_stream_t* handle;
 
   duv_check_args(ctx, (const duv_schema_entry[]){
@@ -193,7 +192,7 @@ static duk_ret_t duv_is_readable(duk_context *ctx) {
   return 1;
 }
 
-static duk_ret_t duv_is_writable(duk_context *ctx) {
+duk_ret_t duv_is_writable(duk_context *ctx) {
   duv_check_args(ctx, (const duv_schema_entry[]){
     {"stream", duv_is_stream},
     {NULL}
@@ -204,7 +203,7 @@ static duk_ret_t duv_is_writable(duk_context *ctx) {
   return 1;
 }
 
-static duk_ret_t duv_stream_set_blocking(duk_context *ctx) {
+duk_ret_t duv_stream_set_blocking(duk_context *ctx) {
   uv_stream_t* handle;
   int blocking;
 

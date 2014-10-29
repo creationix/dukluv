@@ -1,4 +1,5 @@
 #include "duv.h"
+#include "dhttp_parser.h"
 
 static uv_loop_t loop;
 
@@ -37,8 +38,16 @@ static duk_ret_t duv_main(duk_context *ctx) {
   duk_push_global_object(ctx);
   duk_dup(ctx, -1);
   duk_put_prop_string(ctx, -2, "global");
-  dukopen_duv(ctx);
+
+  // Load duv module into global uv
+  duk_push_c_function(ctx, dukopen_uv, 0);
+  duk_call(ctx, 0);
   duk_put_prop_string(ctx, -2, "uv");
+
+  // Load dhttp_parser module into global http_parser
+  duk_push_c_function(ctx, dukopen_http_parser, 0);
+  duk_call(ctx, 0);
+  duk_put_prop_string(ctx, -2, "http_parser");
 
   // Setup the module loader
   duk_get_prop_string(ctx, -1, "Duktape");

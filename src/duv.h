@@ -3,6 +3,7 @@
 
 #include "duktape.h"
 #include "uv.h"
+#include <assert.h>
 
 #if defined(_WIN32)
 # include <fcntl.h>
@@ -16,7 +17,6 @@
 # define S_ISLNK(x)  0
 # define S_ISSOCK(x) 0
 #endif
-
 
 #ifndef PATH_MAX
 #define PATH_MAX (8096)
@@ -44,8 +44,6 @@
 #define DUV_FS_EVENT 1
 #define DUV_FS_POLL 1
 
-#include "schema.c"
-
 // Ref for userdata and event callbacks
 typedef struct {
   int ref;
@@ -60,13 +58,10 @@ typedef struct {
   void* data; // extra data
 } duv_req_t;
 
-
-duk_ret_t dukopen_duv(duk_context *ctx);
+duk_ret_t dukopen_uv(duk_context *ctx);
 
 #include "refs.h"
 #include "utils.h"
-
-// From misc.c
-static const char* duv_protocol_to_string(int family);
+#include "schema.h"
 
 #endif

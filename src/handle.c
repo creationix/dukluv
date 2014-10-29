@@ -1,4 +1,4 @@
-#include "duv.h"
+#include "handle.h"
 
 static void duv_close_cb(uv_handle_t* handle) {
   duk_context *ctx = handle->loop->data;
@@ -8,7 +8,7 @@ static void duv_close_cb(uv_handle_t* handle) {
   handle->data = duv_cleanup_handle(ctx, data);
 }
 
-static duk_ret_t duv_close(duk_context *ctx) {
+duk_ret_t duv_close(duk_context *ctx) {
   uv_handle_t* handle;
 
   duv_check_args(ctx, (const duv_schema_entry[]) {

@@ -1,6 +1,6 @@
 #include "duv.h"
 
-static duk_ret_t duv_guess_handle(duk_context *ctx) {
+duk_ret_t duv_guess_handle(duk_context *ctx) {
   uv_file file = duk_require_uint(ctx, 0);
   switch (uv_guess_handle(file)) {
 #define XX(uc, lc) case UV_##uc: duk_push_string(ctx, #uc); break;
@@ -12,37 +12,37 @@ static duk_ret_t duv_guess_handle(duk_context *ctx) {
   return 1;
 }
 
-static duk_ret_t duv_version(duk_context *ctx) {
+duk_ret_t duv_version(duk_context *ctx) {
  duk_push_uint(ctx, uv_version());
  return 1;
 }
 
-static duk_ret_t duv_version_string(duk_context *ctx) {
+duk_ret_t duv_version_string(duk_context *ctx) {
  duk_push_string(ctx, uv_version_string());
  return 1;
 }
 
-static duk_ret_t duv_get_process_title(duk_context *ctx) {
+duk_ret_t duv_get_process_title(duk_context *ctx) {
   char title[MAX_TITLE_LENGTH];
   duv_check(ctx, uv_get_process_title(title, MAX_TITLE_LENGTH));
   duk_push_string(ctx, title);
   return 1;
 }
 
-static duk_ret_t duv_set_process_title(duk_context *ctx) {
+duk_ret_t duv_set_process_title(duk_context *ctx) {
   const char* title = duk_require_string(ctx, 0);
   duv_check(ctx, uv_set_process_title(title));
   return 0;
 }
 
-static duk_ret_t duv_resident_set_memory(duk_context *ctx) {
+duk_ret_t duv_resident_set_memory(duk_context *ctx) {
   size_t rss;
   duv_check(ctx, uv_resident_set_memory(&rss));
   duk_push_number(ctx, rss);
   return 1;
 }
 
-static duk_ret_t duv_uptime(duk_context *ctx) {
+duk_ret_t duv_uptime(duk_context *ctx) {
   double uptime;
   duv_check(ctx, uv_uptime(&uptime));
   duk_push_number(ctx, uptime);
@@ -57,7 +57,7 @@ static void duv_push_timeval_table(duk_context *ctx, const uv_timeval_t* t) {
   duk_put_prop_string(ctx, -2, "usec");
 }
 
-static duk_ret_t duv_getrusage(duk_context *ctx) {
+duk_ret_t duv_getrusage(duk_context *ctx) {
   uv_rusage_t rusage;
   duv_check(ctx, uv_getrusage(&rusage));
   duk_push_object(ctx);
@@ -112,7 +112,7 @@ static duk_ret_t duv_getrusage(duk_context *ctx) {
   return 1;
 }
 
-static duk_ret_t duv_cpu_info(duk_context *ctx) {
+duk_ret_t duv_cpu_info(duk_context *ctx) {
   uv_cpu_info_t* cpu_infos;
   int count, i;
   duv_check(ctx, uv_cpu_info(&cpu_infos, &count));
@@ -143,7 +143,7 @@ static duk_ret_t duv_cpu_info(duk_context *ctx) {
   return 1;
 }
 
-static duk_ret_t duv_interface_addresses(duk_context *ctx) {
+duk_ret_t duv_interface_addresses(duk_context *ctx) {
   uv_interface_address_t* interfaces;
   int count, i;
   char ip[INET6_ADDRSTRLEN];
@@ -189,7 +189,7 @@ static duk_ret_t duv_interface_addresses(duk_context *ctx) {
   return 1;
 }
 
-static duk_ret_t duv_loadavg(duk_context *ctx) {
+duk_ret_t duv_loadavg(duk_context *ctx) {
   double avg[3];
   int i;
   uv_loadavg(avg);
@@ -201,7 +201,7 @@ static duk_ret_t duv_loadavg(duk_context *ctx) {
   return 1;
 }
 
-static duk_ret_t duv_exepath(duk_context *ctx) {
+duk_ret_t duv_exepath(duk_context *ctx) {
   size_t size = 2*PATH_MAX;
   char exe_path[2*PATH_MAX];
   duv_check(ctx, uv_exepath(exe_path, &size));
@@ -209,7 +209,7 @@ static duk_ret_t duv_exepath(duk_context *ctx) {
   return 1;
 }
 
-static duk_ret_t duv_cwd(duk_context *ctx) {
+duk_ret_t duv_cwd(duk_context *ctx) {
   size_t size = 2*PATH_MAX;
   char path[2*PATH_MAX];
   duv_check(ctx, uv_cwd(path, &size));
@@ -217,52 +217,19 @@ static duk_ret_t duv_cwd(duk_context *ctx) {
   return 1;
 }
 
-static duk_ret_t duv_chdir(duk_context *ctx) {
+duk_ret_t duv_chdir(duk_context *ctx) {
   const char* path = duk_require_string(ctx, 0);
   duv_check(ctx, uv_chdir(path));
   return 0;
 }
 
-static duk_ret_t duv_get_total_memory(duk_context *ctx) {
+duk_ret_t duv_get_total_memory(duk_context *ctx) {
   duk_push_number(ctx, uv_get_total_memory());
   return 1;
 }
 
-static duk_ret_t duv_hrtime(duk_context *ctx) {
+duk_ret_t duv_hrtime(duk_context *ctx) {
   duk_push_number(ctx, uv_hrtime());
   return 1;
 }
 
-static const char* duv_protocol_to_string(int family) {
-#ifdef AF_UNIX
-  if (family == AF_UNIX) return "UNIX";
-#endif
-#ifdef AF_INET
-  if (family == AF_INET) return "INET";
-#endif
-#ifdef AF_INET6
-  if (family == AF_INET6) return "INET6";
-#endif
-#ifdef AF_IPX
-  if (family == AF_IPX) return "IPX";
-#endif
-#ifdef AF_NETLINK
-  if (family == AF_NETLINK) return "NETLINK";
-#endif
-#ifdef AF_X25
-  if (family == AF_X25) return "X25";
-#endif
-#ifdef AF_AX25
-  if (family == AF_AX25) return "AX25";
-#endif
-#ifdef AF_ATMPVC
-  if (family == AF_ATMPVC) return "ATMPVC";
-#endif
-#ifdef AF_APPLETALK
-  if (family == AF_APPLETALK) return "APPLETALK";
-#endif
-#ifdef AF_PACKET
-  if (family == AF_PACKET) return "PACKET";
-#endif
-  return NULL;
-}

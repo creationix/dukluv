@@ -1,6 +1,6 @@
-#include "duv.h"
+#include "timer.h"
 
-static duk_ret_t duv_new_timer(duk_context *ctx) {
+duk_ret_t duv_new_timer(duk_context *ctx) {
   uv_timer_t* handle;
 
   duv_check_args(ctx, (const duv_schema_entry[]) {
@@ -17,7 +17,7 @@ static void duv_timer_cb(uv_timer_t* handle) {
   duv_emit_event(handle->loop->data, handle->data, DUV_TIMEOUT, 0);
 }
 
-static duk_ret_t duv_timer_start(duk_context *ctx) {
+duk_ret_t duv_timer_start(duk_context *ctx) {
   uv_timer_t* handle;
   uint64_t timeout;
   uint64_t repeat;
@@ -31,14 +31,14 @@ static duk_ret_t duv_timer_start(duk_context *ctx) {
   });
 
   handle = duk_get_buffer(ctx, 0, NULL);
-  timeout = duk_get_number(ctx, 1);
-  repeat = duk_get_number(ctx, 2);
+  timeout = duk_get_uint(ctx, 1);
+  repeat = duk_get_uint(ctx, 2);
   duv_check(ctx, uv_timer_start(handle, duv_timer_cb, timeout, repeat));
   duv_store_handler(ctx, handle->data, DUV_TIMEOUT, 3);
   return 0;
 }
 
-static duk_ret_t duv_timer_stop(duk_context *ctx) {
+duk_ret_t duv_timer_stop(duk_context *ctx) {
   uv_timer_t* handle;
 
   duv_check_args(ctx, (const duv_schema_entry[]) {
@@ -51,7 +51,7 @@ static duk_ret_t duv_timer_stop(duk_context *ctx) {
   return 0;
 }
 
-static duk_ret_t duv_timer_again(duk_context *ctx) {
+duk_ret_t duv_timer_again(duk_context *ctx) {
   uv_timer_t* handle;
 
   duv_check_args(ctx, (const duv_schema_entry[]) {
@@ -64,7 +64,7 @@ static duk_ret_t duv_timer_again(duk_context *ctx) {
   return 0;
 }
 
-static duk_ret_t duv_timer_set_repeat(duk_context *ctx) {
+duk_ret_t duv_timer_set_repeat(duk_context *ctx) {
   uv_timer_t* handle;
   uint64_t repeat;
 
@@ -75,12 +75,12 @@ static duk_ret_t duv_timer_set_repeat(duk_context *ctx) {
   });
 
   handle = duk_get_buffer(ctx, 0, NULL);
-  repeat = duk_get_number(ctx, 1);
+  repeat = duk_get_uint(ctx, 1);
   uv_timer_set_repeat(handle, repeat);
   return 0;
 }
 
-static duk_ret_t duv_timer_get_repeat(duk_context *ctx) {
+duk_ret_t duv_timer_get_repeat(duk_context *ctx) {
   uv_timer_t* handle;
 
   duv_check_args(ctx, (const duv_schema_entry[]) {

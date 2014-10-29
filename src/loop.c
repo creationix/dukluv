@@ -1,6 +1,6 @@
-#include "duv.h"
+#include "loop.h"
 
-static duk_ret_t duv_run(duk_context *ctx) {
+duk_ret_t duv_run(duk_context *ctx) {
   int ret = uv_run(duv_loop(ctx), UV_RUN_DEFAULT);
   if (ret < 0) {
     duv_error(ctx, ret);
@@ -16,7 +16,7 @@ static void duv_walk_cb(uv_handle_t *handle, duk_context *ctx) {
   duk_call_method(ctx, 1);
 }
 
-static duk_ret_t duv_walk(duk_context *ctx) {
+duk_ret_t duv_walk(duk_context *ctx) {
 
   duv_check_args(ctx, (const duv_schema_entry[]) {
     {"callback", duk_is_callable},

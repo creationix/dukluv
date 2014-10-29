@@ -1,4 +1,4 @@
-#include "duv.h"
+#include "tty.h"
 
 static uv_tty_t* duv_require_tty(duk_context *ctx, int index) {
   // TODO: verify pointer is uv_handle_t* somehow.
@@ -9,7 +9,7 @@ static uv_tty_t* duv_require_tty(duk_context *ctx, int index) {
   return handle;
 }
 
-static duk_ret_t duv_new_tty(duk_context *ctx) {
+duk_ret_t duv_new_tty(duk_context *ctx) {
   uv_tty_t* handle = duk_push_fixed_buffer(ctx, sizeof(*handle));
   uv_file fd = duk_require_int(ctx, 0);
   duk_bool_t readable = duk_require_boolean(ctx, 1);
@@ -22,19 +22,19 @@ static duk_ret_t duv_new_tty(duk_context *ctx) {
   return 1;
 }
 
-static duk_ret_t duv_tty_set_mode(duk_context *ctx) {
+duk_ret_t duv_tty_set_mode(duk_context *ctx) {
   uv_tty_t* handle = duv_require_tty(ctx, 0);
   int mode = duk_require_int(ctx, 1);
   duv_check(ctx, uv_tty_set_mode(handle, mode));
   return 0;
 }
 
-static duk_ret_t duv_tty_reset_mode(duk_context *ctx) {
+duk_ret_t duv_tty_reset_mode(duk_context *ctx) {
   duv_check(ctx, uv_tty_reset_mode());
   return 0;
 }
 
-static duk_ret_t duv_tty_get_winsize(duk_context *ctx) {
+duk_ret_t duv_tty_get_winsize(duk_context *ctx) {
   uv_tty_t* handle = duv_require_tty(ctx, 0);
   int width, height;
   duv_check(ctx, uv_tty_get_winsize(handle, &width, &height));

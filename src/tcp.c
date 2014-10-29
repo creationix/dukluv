@@ -1,6 +1,6 @@
-#include "duv.h"
+#include "tcp.h"
 
-static duk_ret_t duv_new_tcp(duk_context *ctx) {
+duk_ret_t duv_new_tcp(duk_context *ctx) {
   uv_tcp_t* handle;
 
   duv_check_args(ctx, (const duv_schema_entry[]) {
@@ -13,7 +13,7 @@ static duk_ret_t duv_new_tcp(duk_context *ctx) {
   return 1;
 }
 
-static duk_ret_t duv_tcp_open(duk_context *ctx) {
+duk_ret_t duv_tcp_open(duk_context *ctx) {
   uv_tcp_t* handle;
   uv_os_sock_t sock;
 
@@ -29,7 +29,7 @@ static duk_ret_t duv_tcp_open(duk_context *ctx) {
   return 0;
 }
 
-static duk_ret_t duv_tcp_nodelay(duk_context *ctx) {
+duk_ret_t duv_tcp_nodelay(duk_context *ctx) {
   uv_tcp_t* handle;
   int enable;
 
@@ -45,7 +45,7 @@ static duk_ret_t duv_tcp_nodelay(duk_context *ctx) {
   return 0;
 }
 
-static duk_ret_t duv_tcp_keepalive(duk_context *ctx) {
+duk_ret_t duv_tcp_keepalive(duk_context *ctx) {
   uv_tcp_t* handle;
   int enable, delay;
 
@@ -63,7 +63,7 @@ static duk_ret_t duv_tcp_keepalive(duk_context *ctx) {
   return 0;
 }
 
-static duk_ret_t duv_tcp_simultaneous_accepts(duk_context *ctx) {
+duk_ret_t duv_tcp_simultaneous_accepts(duk_context *ctx) {
   uv_tcp_t* handle;
   int enable;
 
@@ -79,7 +79,7 @@ static duk_ret_t duv_tcp_simultaneous_accepts(duk_context *ctx) {
   return 0;
 }
 
-static duk_ret_t duv_tcp_bind(duk_context *ctx) {
+duk_ret_t duv_tcp_bind(duk_context *ctx) {
   uv_tcp_t* handle;
   const char* host;
   int port, flags;
@@ -126,7 +126,7 @@ static void duv_push_sockaddr(duk_context *ctx, struct sockaddr_storage* address
   duk_put_prop_string(ctx, -2, "ip");
 }
 
-static duk_ret_t duv_tcp_getsockname(duk_context *ctx) {
+duk_ret_t duv_tcp_getsockname(duk_context *ctx) {
   uv_tcp_t* handle;
   int addrlen;
   struct sockaddr_storage address;
@@ -143,7 +143,7 @@ static duk_ret_t duv_tcp_getsockname(duk_context *ctx) {
   return 1;
 }
 
-static duk_ret_t duv_tcp_getpeername(duk_context *ctx) {
+duk_ret_t duv_tcp_getpeername(duk_context *ctx) {
   uv_tcp_t* handle;
   int addrlen;
   struct sockaddr_storage address;
@@ -167,7 +167,7 @@ static void duv_connect_cb(uv_connect_t* req, int status) {
   req->data = duv_cleanup_req(ctx, req->data);
 }
 
-static duk_ret_t duv_tcp_connect(duk_context *ctx) {
+duk_ret_t duv_tcp_connect(duk_context *ctx) {
   uv_tcp_t* handle;
   const char* host;
   int port, flags;

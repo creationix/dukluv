@@ -1,6 +1,6 @@
-#include "duv.h"
+#include "req.h"
 
-static duk_ret_t duv_cancel(duk_context *ctx) {
+duk_ret_t duv_cancel(duk_context *ctx) {
   uv_req_t* req;
 
   duv_check_args(ctx, (const duv_schema_entry[]) {

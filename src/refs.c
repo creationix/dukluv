@@ -1,7 +1,7 @@
 #include "refs.h"
 
 // Create a global array refs in the heap stash.
-static void duv_ref_setup(duk_context *ctx) {
+void duv_ref_setup(duk_context *ctx) {
   duk_push_heap_stash(ctx);
 
   // Create a new array with one `0` at index `0`.
@@ -15,7 +15,7 @@ static void duv_ref_setup(duk_context *ctx) {
 }
 
 // like luaL_ref, but assumes storage in "refs" property of heap stash
-static int duv_ref(duk_context *ctx) {
+int duv_ref(duk_context *ctx) {
   int ref;
   if (duk_is_undefined(ctx, -1)) {
     duk_pop(ctx);
@@ -55,7 +55,7 @@ static int duv_ref(duk_context *ctx) {
   return ref;
 }
 
-static void duv_push_ref(duk_context *ctx, int ref) {
+void duv_push_ref(duk_context *ctx, int ref) {
   if (!ref) {
     duk_push_undefined(ctx);
     return;
@@ -70,7 +70,7 @@ static void duv_push_ref(duk_context *ctx, int ref) {
   duk_remove(ctx, -2);
 }
 
-static void duv_unref(duk_context *ctx, int ref) {
+void duv_unref(duk_context *ctx, int ref) {
 
   if (!ref) return;
 

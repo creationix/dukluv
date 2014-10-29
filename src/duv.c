@@ -1,17 +1,17 @@
 #include "duv.h"
 
-#include "refs.c"
-#include "utils.c"
-#include "loop.c"
-#include "req.c"
-#include "handle.c"
-#include "timer.c"
-#include "stream.c"
-#include "tcp.c"
-#include "pipe.c"
-#include "tty.c"
-#include "fs.c"
-#include "misc.c"
+#include "refs.h"
+#include "utils.h"
+#include "loop.h"
+#include "req.h"
+#include "handle.h"
+#include "timer.h"
+#include "stream.h"
+#include "tcp.h"
+#include "pipe.h"
+#include "tty.h"
+#include "fs.h"
+#include "misc.h"
 
 static const duk_function_list_entry duv_funcs[] = {
   // loop.c
@@ -122,7 +122,7 @@ static const duk_function_list_entry duv_funcs[] = {
 };
 
 
-duk_ret_t dukopen_duv(duk_context *ctx) {
+duk_ret_t dukopen_uv(duk_context *ctx) {
 
   duv_ref_setup(ctx);
 
