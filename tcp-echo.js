@@ -1,6 +1,6 @@
 "use strict";
-var p = require('modules/utils.js').prettyPrint;
-var Tcp = require('modules/classes.js').Tcp;
+var p = require('./modules/utils.js').prettyPrint;
+var Tcp = require('./modules/classes.js').Tcp;
 
 var server, socket, client;
 

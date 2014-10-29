@@ -3,6 +3,100 @@
 
 static uv_loop_t loop;
 
+static duk_ret_t duv_require(duk_context *ctx) {
+  dschema_check(ctx, (const duv_schema_entry[]) {
+    {"id", duk_is_string},
+    {NULL}
+  });
+
+  // push Duktape
+  duk_get_global_string(ctx, "Duktape");
+
+  // id = Duktape.modResolve(this, id);
+  duk_get_prop_string(ctx, -1, "modResolve");
+  duk_push_this(ctx);
+  duk_dup(ctx, 0);
+  duk_call(ctx, 2);
+  duk_replace(ctx, 0);
+
+  // push Duktape.modLoaded
+  duk_get_prop_string(ctx, -1, "modLoaded");
+
+  // push Duktape.modLoaded[id];
+  duk_dup(ctx, 0);
+  duk_get_prop(ctx, -2);
+
+  // if (typeof Duktape.modLoaded[id] === 'object') {
+  //   return Duktape.modLoaded[id].exports;
+  // }
+  if (duk_is_object(ctx, -1)) {
+    duk_get_prop_string(ctx, -1, "exports");
+    return 1;
+  }
+
+  // pop Duktape.modLoaded[id]
+  duk_pop(ctx);
+
+  // push module = { id: id, exports: {} }
+  duk_push_object(ctx);
+  duk_dup(ctx, 0);
+  duk_put_prop_string(ctx, -2, "id");
+  duk_push_object(ctx);
+  duk_put_prop_string(ctx, -2, "exports");
+
+  // Duktape.modLoaded[id] = module
+  duk_dup(ctx, 0);
+  duk_dup(ctx, -2);
+  duk_put_prop(ctx, -4);
+
+  // remove Duktape.modLoaded
+  duk_remove(ctx, -2);
+
+  // push Duktape.modLoad(module)
+  duk_get_prop_string(ctx, -2, "modLoad");
+  duk_dup(ctx, -2);
+  duk_call(ctx, 1);
+
+  // if ret !== undefined module.exports = ret;
+  if (duk_is_undefined(ctx, -1)) {
+    duk_pop(ctx);
+  }
+  else {
+    duk_put_prop_string(ctx, -2, "exports");
+  }
+
+  duk_get_prop_string(ctx, -1, "exports");
+
+  return 1;
+}
+
+// Given a module and js code, compile the code and execute as CJS module
+// return the result of the compiled code ran as a function.
+static duk_ret_t duv_mod_compile(duk_context *ctx) {
+  // Check the args
+  dschema_check(ctx, (const duv_schema_entry[]) {
+    {"module", duk_is_object},
+    {"code", dschema_is_data},
+    {NULL}
+  });
+  duk_to_string(ctx, 1);
+
+  // Wrap the code
+  duk_push_string(ctx, "function(require,module){require=require.bind(module);var exports=module.exports;");
+  duk_dup(ctx, 1);
+  duk_push_string(ctx, "}");
+  duk_concat(ctx, 3);
+
+  // Compile to a function
+  duk_get_prop_string(ctx, 0, "id");
+  duk_compile(ctx, DUK_COMPILE_FUNCTION);
+  duk_push_c_function(ctx, duv_require, 1);
+  duk_dup(ctx, 0);
+  duk_call(ctx, 2);
+
+  return 1;
+}
+
 // Sync readfile using libuv APIs as an API function.
 static duk_ret_t duv_loadfile(duk_context *ctx) {
   const char* path = duk_require_string(ctx, 0);
@@ -49,17 +143,20 @@ static duk_ret_t duv_main(duk_context *ctx) {
   duk_call(ctx, 0);
   duk_put_prop_string(ctx, -2, "http_parser");
 
-  // Setup the module loader
+  // Replace the module loader with Duktape 2.x polyfill.
   duk_get_prop_string(ctx, -1, "Duktape");
-  duk_push_c_function(ctx, duv_loadfile, 1);
-  duk_put_prop_string(ctx, -2, "modSearch");
+  duk_del_prop_string(ctx, -1, "modSearch");
+  duk_push_c_function(ctx, duv_mod_compile, 2);
+  duk_put_prop_string(ctx, -2, "modCompile");
   duk_pop(ctx);
+
+  duk_push_c_function(ctx, duv_require, 1);
+  duk_put_prop_string(ctx, -2, "newRequire");
 
   duk_eval_file_noresult(ctx, path);
   uv_run(&loop, UV_RUN_DEFAULT);
 
   return 0;
-
 }
 
 int main(int argc, char *argv[]) {

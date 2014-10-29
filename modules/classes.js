@@ -1,5 +1,4 @@
 "use strict";
-
 exports.Emitter = Emitter;
 function Emitter() {}
 Emitter.prototype.on = function on(name, callback) {
