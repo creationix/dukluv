@@ -100,6 +100,7 @@ static void duv_push_error_result(duk_context *ctx, uv_fs_t* req) {
    returns the number of items pushed */
 static void duv_push_fs_result(duk_context *ctx, uv_fs_t* req) {
   duv_req_t* data = req->data;
+  char* chunk;
 
   switch (req->fs_type) {
     case UV_FS_CLOSE:
@@ -138,7 +139,8 @@ static void duv_push_fs_result(duk_context *ctx, uv_fs_t* req) {
       break;
 
     case UV_FS_READ:
-      duk_push_lstring(ctx, data->data, req->result);
+      chunk = duk_push_fixed_buffer(ctx, req->result);
+      memcpy(chunk, data->data, req->result);
       break;
 
     case UV_FS_SCANDIR:
