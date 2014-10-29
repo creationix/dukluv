@@ -286,7 +286,7 @@ duk_ret_t duv_fs_scandir_next(duk_context *ctx) {
   int ret;
   const char* type;
 
-  duv_check_args(ctx, (const duv_schema_entry[]) {
+  dschema_check(ctx, (const duv_schema_entry[]) {
     {"req", duv_is_fs},
     {NULL}
   });

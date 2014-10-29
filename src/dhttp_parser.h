@@ -4,6 +4,7 @@
 #include <assert.h>
 #include "duktape.h"
 #include "http_parser.h"
+#include "schema.h"
 
 duk_ret_t dukopen_http_parser(duk_context *ctx);
 

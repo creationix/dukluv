@@ -3,7 +3,7 @@
 duk_ret_t duv_new_tcp(duk_context *ctx) {
   uv_tcp_t* handle;
 
-  duv_check_args(ctx, (const duv_schema_entry[]) {
+  dschema_check(ctx, (const duv_schema_entry[]) {
     {NULL}
   });
 
@@ -17,7 +17,7 @@ duk_ret_t duv_tcp_open(duk_context *ctx) {
   uv_tcp_t* handle;
   uv_os_sock_t sock;
 
-  duv_check_args(ctx, (const duv_schema_entry[]) {
+  dschema_check(ctx, (const duv_schema_entry[]) {
     {"tcp", duv_is_tcp},
     {"socket", duk_is_number},
     {NULL}
@@ -33,7 +33,7 @@ duk_ret_t duv_tcp_nodelay(duk_context *ctx) {
   uv_tcp_t* handle;
   int enable;
 
-  duv_check_args(ctx, (const duv_schema_entry[]) {
+  dschema_check(ctx, (const duv_schema_entry[]) {
     {"tcp", duv_is_tcp},
     {"isenabled", duk_is_boolean},
     {NULL}
@@ -49,7 +49,7 @@ duk_ret_t duv_tcp_keepalive(duk_context *ctx) {
   uv_tcp_t* handle;
   int enable, delay;
 
-  duv_check_args(ctx, (const duv_schema_entry[]) {
+  dschema_check(ctx, (const duv_schema_entry[]) {
     {"tcp", duv_is_tcp},
     {"isenabled", duk_is_boolean},
     {"delay", duk_is_number},
@@ -67,7 +67,7 @@ duk_ret_t duv_tcp_simultaneous_accepts(duk_context *ctx) {
   uv_tcp_t* handle;
   int enable;
 
-  duv_check_args(ctx, (const duv_schema_entry[]) {
+  dschema_check(ctx, (const duv_schema_entry[]) {
     {"tcp", duv_is_tcp},
     {"isenabled", duk_is_boolean},
     {NULL}
@@ -85,7 +85,7 @@ duk_ret_t duv_tcp_bind(duk_context *ctx) {
   int port, flags;
   struct sockaddr_storage addr;
 
-  duv_check_args(ctx, (const duv_schema_entry[]) {
+  dschema_check(ctx, (const duv_schema_entry[]) {
     {"tcp", duv_is_tcp},
     {"host", duk_is_string},
     {"port", duk_is_number},
@@ -131,7 +131,7 @@ duk_ret_t duv_tcp_getsockname(duk_context *ctx) {
   int addrlen;
   struct sockaddr_storage address;
 
-  duv_check_args(ctx, (const duv_schema_entry[]) {
+  dschema_check(ctx, (const duv_schema_entry[]) {
     {"tcp", duv_is_tcp},
     {NULL}
   });
@@ -148,7 +148,7 @@ duk_ret_t duv_tcp_getpeername(duk_context *ctx) {
   int addrlen;
   struct sockaddr_storage address;
 
-  duv_check_args(ctx, (const duv_schema_entry[]) {
+  dschema_check(ctx, (const duv_schema_entry[]) {
     {"tcp", duv_is_tcp},
     {NULL}
   });
@@ -174,11 +174,11 @@ duk_ret_t duv_tcp_connect(duk_context *ctx) {
   struct sockaddr_storage addr;
   uv_connect_t* req;
 
-  duv_check_args(ctx, (const duv_schema_entry[]) {
+  dschema_check(ctx, (const duv_schema_entry[]) {
     {"tcp", duv_is_tcp},
     {"host", duk_is_string},
     {"port", duk_is_number},
-    {"next", duv_is_continuation},
+    {"next", dschema_is_continuation},
     {NULL}
   });
 

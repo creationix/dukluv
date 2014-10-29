@@ -3,7 +3,7 @@
 duk_ret_t duv_cancel(duk_context *ctx) {
   uv_req_t* req;
 
-  duv_check_args(ctx, (const duv_schema_entry[]) {
+  dschema_check(ctx, (const duv_schema_entry[]) {
     {"req", duv_is_req},
     {NULL}
   });

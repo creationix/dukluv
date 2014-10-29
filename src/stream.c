@@ -11,9 +11,9 @@ duk_ret_t duv_shutdown(duk_context *ctx) {
   uv_stream_t* handle;
   uv_shutdown_t* req;
 
-  duv_check_args(ctx, (const duv_schema_entry[]) {
+  dschema_check(ctx, (const duv_schema_entry[]) {
     {"stream", duv_is_stream},
-    {"next", duv_is_continuation},
+    {"next", dschema_is_continuation},
     {NULL}
   });
 
@@ -34,7 +34,7 @@ duk_ret_t duv_listen(duk_context *ctx) {
   uv_stream_t* handle;
   int backlog;
 
-  duv_check_args(ctx, (const duv_schema_entry[]) {
+  dschema_check(ctx, (const duv_schema_entry[]) {
     {"stream", duv_is_stream},
     {"backlog", duk_is_number},
     {"onConnection", duk_is_callable},
@@ -52,7 +52,7 @@ duk_ret_t duv_accept(duk_context *ctx) {
   uv_stream_t* server;
   uv_stream_t* client;
 
-  duv_check_args(ctx, (const duv_schema_entry[]) {
+  dschema_check(ctx, (const duv_schema_entry[]) {
     {"server", duv_is_stream},
     {"client", duv_is_stream},
     {NULL}
@@ -97,7 +97,7 @@ static void duv_read_cb(uv_stream_t* handle, ssize_t nread, const uv_buf_t* buf)
 duk_ret_t duv_read_start(duk_context *ctx) {
   uv_stream_t* handle;
 
-  duv_check_args(ctx, (const duv_schema_entry[]) {
+  dschema_check(ctx, (const duv_schema_entry[]) {
     {"stream", duv_is_stream},
     {"onread", duk_is_callable},
     {NULL}
@@ -112,7 +112,7 @@ duk_ret_t duv_read_start(duk_context *ctx) {
 duk_ret_t duv_read_stop(duk_context *ctx) {
   uv_stream_t* handle;
 
-  duv_check_args(ctx, (const duv_schema_entry[]) {
+  dschema_check(ctx, (const duv_schema_entry[]) {
     {"stream", duv_is_stream},
     {NULL}
   });
@@ -134,10 +134,10 @@ duk_ret_t duv_write(duk_context *ctx) {
   uv_buf_t buf;
   uv_write_t* req;
 
-  duv_check_args(ctx, (const duv_schema_entry[]){
+  dschema_check(ctx, (const duv_schema_entry[]){
     {"stream", duv_is_stream},
-    {"data", duv_is_data},
-    {"next", duv_is_continuation},
+    {"data", dschema_is_data},
+    {"next", dschema_is_continuation},
     {NULL}
   });
 
@@ -182,7 +182,7 @@ duk_ret_t duv_write(duk_context *ctx) {
 duk_ret_t duv_is_readable(duk_context *ctx) {
   uv_stream_t* handle;
 
-  duv_check_args(ctx, (const duv_schema_entry[]){
+  dschema_check(ctx, (const duv_schema_entry[]){
     {"stream", duv_is_stream},
     {NULL}
   });
@@ -193,7 +193,7 @@ duk_ret_t duv_is_readable(duk_context *ctx) {
 }
 
 duk_ret_t duv_is_writable(duk_context *ctx) {
-  duv_check_args(ctx, (const duv_schema_entry[]){
+  dschema_check(ctx, (const duv_schema_entry[]){
     {"stream", duv_is_stream},
     {NULL}
   });
@@ -207,7 +207,7 @@ duk_ret_t duv_stream_set_blocking(duk_context *ctx) {
   uv_stream_t* handle;
   int blocking;
 
-  duv_check_args(ctx, (const duv_schema_entry[]){
+  dschema_check(ctx, (const duv_schema_entry[]){
     {"stream", duv_is_stream},
     {"isblocking", duk_is_boolean},
     {NULL}

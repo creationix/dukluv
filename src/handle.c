@@ -11,9 +11,9 @@ static void duv_close_cb(uv_handle_t* handle) {
 duk_ret_t duv_close(duk_context *ctx) {
   uv_handle_t* handle;
 
-  duv_check_args(ctx, (const duv_schema_entry[]) {
+  dschema_check(ctx, (const duv_schema_entry[]) {
     {"handle", duv_is_handle},
-    {"onclosed", duv_is_continuation},
+    {"onclosed", dschema_is_continuation},
     {NULL}
   });
 

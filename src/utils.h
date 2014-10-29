@@ -3,6 +3,12 @@
 
 #include "duv.h"
 
+duk_bool_t duv_is_handle(duk_context* ctx, duk_idx_t index);
+duk_bool_t duv_is_req(duk_context* ctx, duk_idx_t index);
+duk_bool_t duv_is_fs(duk_context* ctx, duk_idx_t index);
+duk_bool_t duv_is_stream(duk_context* ctx, duk_idx_t index);
+duk_bool_t duv_is_timer(duk_context* ctx, duk_idx_t index);
+duk_bool_t duv_is_tcp(duk_context* ctx, duk_idx_t index);
 uv_loop_t* duv_loop(duk_context *ctx);
 duv_handle_t* duv_setup_handle(duk_context *ctx);
 duv_handle_t* duv_cleanup_handle(duk_context *ctx, duv_handle_t *data);

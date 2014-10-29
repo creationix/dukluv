@@ -18,7 +18,7 @@ static void duv_walk_cb(uv_handle_t *handle, duk_context *ctx) {
 
 duk_ret_t duv_walk(duk_context *ctx) {
 
-  duv_check_args(ctx, (const duv_schema_entry[]) {
+  dschema_check(ctx, (const duv_schema_entry[]) {
     {"callback", duk_is_callable},
     {NULL}
   });

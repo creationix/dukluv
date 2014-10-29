@@ -3,7 +3,7 @@
 duk_ret_t duv_new_timer(duk_context *ctx) {
   uv_timer_t* handle;
 
-  duv_check_args(ctx, (const duv_schema_entry[]) {
+  dschema_check(ctx, (const duv_schema_entry[]) {
     {NULL}
   });
 
@@ -22,7 +22,7 @@ duk_ret_t duv_timer_start(duk_context *ctx) {
   uint64_t timeout;
   uint64_t repeat;
 
-  duv_check_args(ctx, (const duv_schema_entry[]) {
+  dschema_check(ctx, (const duv_schema_entry[]) {
     {"timer", duv_is_timer},
     {"timeout", duk_is_number},
     {"repeat", duk_is_number},
@@ -41,7 +41,7 @@ duk_ret_t duv_timer_start(duk_context *ctx) {
 duk_ret_t duv_timer_stop(duk_context *ctx) {
   uv_timer_t* handle;
 
-  duv_check_args(ctx, (const duv_schema_entry[]) {
+  dschema_check(ctx, (const duv_schema_entry[]) {
     {"timer", duv_is_timer},
     {NULL}
   });
@@ -54,7 +54,7 @@ duk_ret_t duv_timer_stop(duk_context *ctx) {
 duk_ret_t duv_timer_again(duk_context *ctx) {
   uv_timer_t* handle;
 
-  duv_check_args(ctx, (const duv_schema_entry[]) {
+  dschema_check(ctx, (const duv_schema_entry[]) {
     {"timer", duv_is_timer},
     {NULL}
   });
@@ -68,7 +68,7 @@ duk_ret_t duv_timer_set_repeat(duk_context *ctx) {
   uv_timer_t* handle;
   uint64_t repeat;
 
-  duv_check_args(ctx, (const duv_schema_entry[]) {
+  dschema_check(ctx, (const duv_schema_entry[]) {
     {"timer", duv_is_timer},
     {"repeat", duk_is_number},
     {NULL}
@@ -83,7 +83,7 @@ duk_ret_t duv_timer_set_repeat(duk_context *ctx) {
 duk_ret_t duv_timer_get_repeat(duk_context *ctx) {
   uv_timer_t* handle;
 
-  duv_check_args(ctx, (const duv_schema_entry[]) {
+  dschema_check(ctx, (const duv_schema_entry[]) {
     {"timer", duv_is_timer},
     {NULL}
   });
