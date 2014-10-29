@@ -7,36 +7,38 @@ var test = require('modules/test.js').test;
 // It also tests the handle close callback and
 // makes sure self is passed in properly to callbacks.
 test("simple timeout", function (assert, expect) {
-  var timer = uv.new_timer();
+  var context = {};
+  var timer = uv.new_timer.call(context);
   uv.timer_start(timer, 10, 0, expect(ontimeout));
 
   function ontimeout() {
-    assert(this === timer);
+    assert(this === context);
     p("timeout", timer);
-    uv.close(timer, expect(onclosed));
+    uv.close.call(context, timer, expect(onclosed));
   }
 
   function onclosed() {
-    assert(this === timer);
+    assert(this === context);
     p("closed", timer);
   }
 });
 
 // This is like the previous test, but using repeat.
 test("simple interval", function (assert, expect) {
-  var timer = uv.new_timer();
+  var context = {};
+  var timer = uv.new_timer.call(context);
   var count = 3;
   uv.timer_start(timer, 10, 10, expect(oninterval, 3));
 
   function oninterval() {
-    assert(this === timer);
+    assert(this === context);
     p("interval", timer);
     if (--count) { return; }
-    uv.close(timer, expect(onclosed));
+    uv.close.call(context, timer, expect(onclosed));
   }
 
   function onclosed() {
-    assert(this === timer);
+    assert(this === context);
     p("closed", timer);
   }
 });

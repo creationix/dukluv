@@ -6,3 +6,6 @@
 	url = https://github.com/svaarala/duktape-releases.git
 	ref = refs/tags/v0.12.0
 	path = lib/duktape
+[submodule "lib/http-parser"]
+	path = lib/http-parser
+	url = https://github.com/joyent/http-parser.git
