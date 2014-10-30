@@ -395,10 +395,12 @@ int main(int argc, char *argv[]) {
     else {
       fprintf(stderr, "\nThrown Value: %s\n\n", duk_json_encode(ctx, -1));
     }
+    uv_loop_close(&loop);
     duk_destroy_heap(ctx);
     return 1;
   }
 
+  uv_loop_close(&loop);
   duk_destroy_heap(ctx);
   return 0;
 }
