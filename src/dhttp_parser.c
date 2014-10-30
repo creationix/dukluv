@@ -54,6 +54,7 @@ static duk_int_t dhttp_parser_version(duk_context *ctx) {
   duk_push_uint(ctx, version);
   return 1;
 }
+
 static duk_int_t dhttp_new_parser(duk_context *ctx) {
   enum http_parser_type file_type;
 

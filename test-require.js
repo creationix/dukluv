@@ -1,59 +1,29 @@
 "use strict";
 
-// Replace Duktape 1.x require with polyfilled 2.x require
-// This won't be needed when new require is native.
-var module = {id:uv.cwd()+"/test-require.js",exports:{}};
-require = newRequire.bind(module);
+
+// These override the built-in resolve and load with
+// the exact same semantics, but with logging added.
 
 // Set up our app-specefic require hooks.
+var modResolve = Duktape.modResolve;
 Duktape.modResolve = function (parent, id) {
-  if (id[0] !== ".") { return id; }
-  return pathJoin(parent.id, "..", id);
+  if (p) { p("modResolve", parent, id); }
+  else { print("modResolve", parent.id, id); }
+  return modResolve.call(this, parent, id);
 };
 
+var modLoad = Duktape.modLoad;
 Duktape.modLoad = function (module) {
-  var code = loadFile(module.id);
-  return Duktape.modCompile(module, code);
+  if (p) { p("modLoad", module); }
+  else { print("modLoad", module.id); }
+  return modLoad.call(this, module);
 };
 
 // Test require
 var p = require('./modules/utils.js').prettyPrint;
-p(require('./b.js'));
+
+p("B", require('./b.js'));
 
 require('./tcp-echo.js');
 
-function loadFile(path) {
-  var fd = uv.fs_open(path, "r", 420 /*0644*/);
-  try {
-    var stat = uv.fs_fstat(fd);
-    var chunk = uv.fs_read(fd, stat.size, 0);
-    return chunk;
-  }
-  finally {
-    uv.fs_close(fd);
-  }
-}
-
-function pathJoin() {
-  var parts = [].join.call(arguments, "/").split("/").filter(Boolean);
-  var skip = 0;
-  for (var i = parts.length - 1; i >= 0; --i) {
-    var part = parts[i];
-    if (part === '.') {
-      parts.splice(i, 1);
-    }
-    else if (part === '..') {
-      parts.splice(i, 1);
-      ++skip;
-    }
-    else if (skip) {
-      parts.splice(i, 1);
-      --skip;
-    }
-  }
-  var path = parts.join("/");
-  if (arguments[0][0] === "/") {
-    path = "/" + path;
-  }
-  return path;
-}
+p(Duktape.modLoaded);
