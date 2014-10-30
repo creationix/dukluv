@@ -166,7 +166,7 @@ static duk_ret_t duv_require(duk_context *ctx) {
     duk_pop(ctx);
   }
   duk_dup(ctx, 0);
-  duk_call(ctx, 2);
+  duk_call_method(ctx, 1);
   duk_replace(ctx, 0);
 
   // push Duktape.modLoaded
@@ -189,18 +189,28 @@ static duk_ret_t duv_require(duk_context *ctx) {
 
   // push module = { id: id, exports: {} }
   duk_push_object(ctx);
-  if (is_main) {
-    duk_push_boolean(ctx, 1);
-    duk_put_prop_string(ctx, -2, "main");
-  }
-  else {
-    duk_push_this(ctx);
-    duk_put_prop_string(ctx, -2, "parent");
-  }
   duk_dup(ctx, 0);
   duk_put_prop_string(ctx, -2, "id");
   duk_push_object(ctx);
   duk_put_prop_string(ctx, -2, "exports");
+
+  // Set module.main = true if we're the first script
+  if (is_main) {
+    duk_push_boolean(ctx, 1);
+    duk_put_prop_string(ctx, -2, "main");
+  }
+
+  // Or set module.parent = parent if we're a child.
+  else {
+    duk_push_this(ctx);
+    duk_put_prop_string(ctx, -2, "parent");
+  }
+
+  // Set the prototype for the module to access require.
+  duk_push_global_stash(ctx);
+  duk_get_prop_string(ctx, -1, "modulePrototype");
+  duk_set_prototype(ctx, -3);
+  duk_pop(ctx);
 
   // Duktape.modLoaded[id] = module
   duk_dup(ctx, 0);
@@ -213,7 +223,7 @@ static duk_ret_t duv_require(duk_context *ctx) {
   // push Duktape.modLoad(module)
   duk_get_prop_string(ctx, -2, "modLoad");
   duk_dup(ctx, -2);
-  duk_call(ctx, 1);
+  duk_call_method(ctx, 0);
 
   // if ret !== undefined module.exports = ret;
   if (duk_is_undefined(ctx, -1)) {
@@ -234,35 +244,34 @@ static duk_ret_t duv_require(duk_context *ctx) {
 // };
 static duk_ret_t duv_mod_resolve(duk_context *ctx) {
   dschema_check(ctx, (const duv_schema_entry[]) {
-    {"parent", duk_is_object},
     {"id", duk_is_string},
     {NULL}
   });
 
+  duk_push_this(ctx);
   duk_push_c_function(ctx, duv_path_join, DUK_VARARGS);
-  duk_get_prop_string(ctx, 0, "id");
+  duk_get_prop_string(ctx, -2, "id");
   duk_push_string(ctx, "..");
-  duk_dup(ctx, 1);
+  duk_dup(ctx, 0);
   duk_call(ctx, 3);
 
   return 1;
 }
 
 // Default Duktape.modLoad implementation
-// return Duktape.modCompile(module, loadFile(module.id));
+// return Duktape.modCompile.call(module, loadFile(module.id));
 static duk_ret_t duv_mod_load(duk_context *ctx) {
   dschema_check(ctx, (const duv_schema_entry[]) {
-    {"module", duk_is_object},
     {NULL}
   });
 
   duk_get_global_string(ctx, "Duktape");
   duk_get_prop_string(ctx, -1, "modCompile");
-  duk_dup(ctx, 0);
+  duk_push_this(ctx);
   duk_push_c_function(ctx, duv_loadfile, 1);
   duk_get_prop_string(ctx, -2, "id");
   duk_call(ctx, 1);
-  duk_call(ctx, 2);
+  duk_call_method(ctx, 1);
 
   return 1;
 }
@@ -273,34 +282,34 @@ static duk_ret_t duv_mod_load(duk_context *ctx) {
 static duk_ret_t duv_mod_compile(duk_context *ctx) {
   // Check the args
   dschema_check(ctx, (const duv_schema_entry[]) {
-    {"module", duk_is_object},
     {"code", dschema_is_data},
     {NULL}
   });
-  duk_to_string(ctx, 1);
+  duk_to_string(ctx, 0);
 
   // Wrap the code
-  duk_push_string(ctx, "function(require,module){require=require.bind(module);var exports=module.exports;");
-  duk_dup(ctx, 1);
+  duk_push_string(ctx, "function(){var module=this,exports=this.exports,require=this.require.bind(this);");
+  duk_dup(ctx, 0);
   duk_push_string(ctx, "}");
   duk_concat(ctx, 3);
 
   // Compile to a function
   duk_get_prop_string(ctx, 0, "id");
   duk_compile(ctx, DUK_COMPILE_FUNCTION);
-  duk_push_c_function(ctx, duv_require, 1);
-  duk_dup(ctx, 0);
-  duk_call(ctx, 2);
+  duk_push_this(ctx);
+  duk_call_method(ctx, 0);
 
   return 1;
 }
 
 static duk_ret_t duv_main(duk_context *ctx) {
-  const char* path = duk_require_string(ctx, 0);
 
   duk_push_global_object(ctx);
   duk_dup(ctx, -1);
   duk_put_prop_string(ctx, -2, "global");
+
+  duk_push_boolean(ctx, 1);
+  duk_put_prop_string(ctx, -2, "dukluv");
 
   // Load duv module into global uv
   duk_push_c_function(ctx, dukopen_uv, 0);
@@ -315,11 +324,11 @@ static duk_ret_t duv_main(duk_context *ctx) {
   // Replace the module loader with Duktape 2.x polyfill.
   duk_get_prop_string(ctx, -1, "Duktape");
   duk_del_prop_string(ctx, -1, "modSearch");
-  duk_push_c_function(ctx, duv_mod_compile, 2);
+  duk_push_c_function(ctx, duv_mod_compile, 1);
   duk_put_prop_string(ctx, -2, "modCompile");
-  duk_push_c_function(ctx, duv_mod_resolve, 2);
+  duk_push_c_function(ctx, duv_mod_resolve, 1);
   duk_put_prop_string(ctx, -2, "modResolve");
-  duk_push_c_function(ctx, duv_mod_load, 1);
+  duk_push_c_function(ctx, duv_mod_load, 0);
   duk_put_prop_string(ctx, -2, "modLoad");
   duk_pop(ctx);
 
@@ -332,13 +341,22 @@ static duk_ret_t duv_main(duk_context *ctx) {
 
   // require.call({id:uv.cwd()+"/main.c"}, path);
   duk_push_c_function(ctx, duv_require, 1);
+  {
+    // Store this require function in the module prototype
+    duk_push_global_stash(ctx);
+    duk_push_object(ctx);
+    duk_dup(ctx, -3);
+    duk_put_prop_string(ctx, -2, "require");
+    duk_put_prop_string(ctx, -2, "modulePrototype");
+    duk_pop(ctx);
+  }
   duk_push_object(ctx);
   duk_push_c_function(ctx, duv_cwd, 0);
   duk_call(ctx, 0);
   duk_push_string(ctx, "/main.c");
   duk_concat(ctx, 2);
   duk_put_prop_string(ctx, -2, "id");
-  duk_push_string(ctx, path);
+  duk_dup(ctx, 0);
   duk_call_method(ctx, 1);
 
   uv_run(&loop, UV_RUN_DEFAULT);
