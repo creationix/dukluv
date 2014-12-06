@@ -160,13 +160,6 @@ duk_ret_t duv_tcp_getpeername(duk_context *ctx) {
   return 1;
 }
 
-static void duv_connect_cb(uv_connect_t* req, int status) {
-  duk_context *ctx = req->handle->loop->data;
-  duv_push_status(ctx, status);
-  duv_fulfill_req(ctx, (uv_req_t*)req, 1);
-  req->data = duv_cleanup_req(ctx, req->data);
-}
-
 duk_ret_t duv_tcp_connect(duk_context *ctx) {
   uv_tcp_t* handle;
   const char* host;
@@ -191,7 +184,6 @@ duk_ret_t duv_tcp_connect(duk_context *ctx) {
     duk_error(ctx, DUK_ERR_TYPE_ERROR, "Invalid IP address or port");
   }
 
-  handle = duk_get_buffer(ctx, 0, NULL);
   req = duk_push_fixed_buffer(ctx, sizeof(*req));
   duv_check(ctx,
     uv_tcp_connect(req, handle, (struct sockaddr*)&addr, duv_connect_cb));

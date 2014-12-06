@@ -1,13 +1,5 @@
 #include "handle.h"
 
-static void duv_close_cb(uv_handle_t* handle) {
-  duk_context *ctx = handle->loop->data;
-  duv_handle_t* data = handle->data;
-
-  duv_emit_event(ctx, data, DUV_CLOSED, 0);
-  handle->data = duv_cleanup_handle(ctx, data);
-}
-
 duk_ret_t duv_close(duk_context *ctx) {
   uv_handle_t* handle;
 

@@ -67,5 +67,6 @@ duk_ret_t dukopen_uv(duk_context *ctx);
 #include "utils.h"
 #include "schema.h"
 #include "uv_schema.h"
+#include "callbacks.h"
 
 #endif

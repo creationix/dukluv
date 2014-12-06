@@ -13,10 +13,6 @@ duk_ret_t duv_new_timer(duk_context *ctx) {
   return 1;
 }
 
-static void duv_timer_cb(uv_timer_t* handle) {
-  duv_emit_event(handle->loop->data, handle->data, DUV_TIMEOUT, 0);
-}
-
 duk_ret_t duv_timer_start(duk_context *ctx) {
   uv_timer_t* handle;
   uint64_t timeout;

@@ -21,6 +21,7 @@ add_library(duv
   src/misc.c
   src/utils.c
   src/uv_schema.c
+  src/callbacks.c
 )
 
 add_library(dschema

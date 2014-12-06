@@ -1,11 +1,5 @@
 #include "duv.h"
 
-static void duv_shutdown_cb(uv_shutdown_t* req, int status) {
-  duk_context *ctx = req->handle->loop->data;
-  duv_push_status(ctx, status);
-  duv_fulfill_req(ctx, (uv_req_t*)req, 1);
-  req->data = duv_cleanup_req(ctx, req->data);
-}
 
 duk_ret_t duv_shutdown(duk_context *ctx) {
   uv_stream_t* handle;
@@ -22,12 +16,6 @@ duk_ret_t duv_shutdown(duk_context *ctx) {
   duv_check(ctx, uv_shutdown(req, handle, duv_shutdown_cb));
   req->data = duv_setup_req(ctx, 1);
   return 1;
-}
-
-static void duv_connection_cb(uv_stream_t* handle, int status) {
-  duk_context *ctx = handle->loop->data;
-  duv_push_status(ctx, status);
-  duv_emit_event(ctx, handle->data, DUV_CONNECTION, 1);
 }
 
 duk_ret_t duv_listen(duk_context *ctx) {
@@ -64,36 +52,6 @@ duk_ret_t duv_accept(duk_context *ctx) {
   return 0;
 }
 
-static void duv_alloc_cb(uv_handle_t* handle, size_t suggested_size, uv_buf_t* buf) {
-  buf->base = malloc(suggested_size);
-  assert(buf->base);
-  buf->len = suggested_size;
-}
-
-static void duv_read_cb(uv_stream_t* handle, ssize_t nread, const uv_buf_t* buf) {
-  duk_context *ctx = handle->loop->data;
-
-  if (nread >= 0) {
-    char* out;
-    duk_push_null(ctx);
-    out = duk_push_fixed_buffer(ctx, nread);
-    memcpy(out, buf->base, nread);
-  }
-
-  free(buf->base);
-  if (nread == 0) return;
-
-  if (nread == UV_EOF) {
-    duk_push_null(ctx); // no error
-    duk_push_undefined(ctx); // undefined value to signify EOF
-  }
-  else if (nread < 0) {
-    duv_push_status(ctx, nread);
-  }
-
-  duv_emit_event(ctx, handle->data, DUV_READ, 2);
-}
-
 duk_ret_t duv_read_start(duk_context *ctx) {
   uv_stream_t* handle;
 
@@ -120,13 +78,6 @@ duk_ret_t duv_read_stop(duk_context *ctx) {
   handle = duk_get_buffer(ctx, 0, NULL);
   duv_check(ctx, uv_read_stop(handle));
   return 0;
-}
-
-static void duv_write_cb(uv_write_t* req, int status) {
-  duk_context *ctx = req->handle->loop->data;
-  duv_push_status(ctx, status);
-  duv_fulfill_req(ctx, (uv_req_t*)req, 1);
-  req->data = duv_cleanup_req(ctx, req->data);
 }
 
 duk_ret_t duv_write(duk_context *ctx) {
