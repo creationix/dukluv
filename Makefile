@@ -1,14 +1,19 @@
-dukluv: build/Makefile
+ifneq ('x'$(shell command -v ninja),'x')
+	GENERATOR_FLAGS='-GNinja'
+endif
+
+dukluv:
+	cmake -H. -Bbuild $(GENERATOR_FLAGS)
 	cmake --build build --config Debug
-
-build/Makefile: CMakeLists.txt uv.cmake
-	cmake -H. -Bbuild
-
-link: build/Makefile dukluv
-	ln -sf build/dukluv /usr/local/bin/dukluv
 
 test: dukluv
 	build/dukluv unit-tests.js
+
+install: test
+	install -s build/dukluv /usr/local/bin
+
+uninstall:
+	rm -f /usr/local/bin/dukluv
 
 clean:
 	rm -rf build
