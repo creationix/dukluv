@@ -1,7 +1,14 @@
 #include "duv.h"
 
 duk_ret_t duv_guess_handle(duk_context *ctx) {
-  uv_file file = duk_require_uint(ctx, 0);
+  uv_file file;
+
+  dschema_check(ctx, (const duv_schema_entry[]) {
+    {"fd", duv_is_fd},
+    {NULL}
+  });
+
+  file = duk_get_uint(ctx, 0);
   switch (uv_guess_handle(file)) {
 #define XX(uc, lc) case UV_##uc: duk_push_string(ctx, #uc); break;
   UV_HANDLE_TYPE_MAP(XX)
@@ -30,7 +37,14 @@ duk_ret_t duv_get_process_title(duk_context *ctx) {
 }
 
 duk_ret_t duv_set_process_title(duk_context *ctx) {
-  const char* title = duk_require_string(ctx, 0);
+  const char* title;
+
+  dschema_check(ctx, (const duv_schema_entry[]) {
+    {"title", duk_is_string},
+    {NULL}
+  });
+
+  title = duk_get_string(ctx, 0);
   duv_check(ctx, uv_set_process_title(title));
   return 0;
 }
@@ -218,7 +232,14 @@ duk_ret_t duv_cwd(duk_context *ctx) {
 }
 
 duk_ret_t duv_chdir(duk_context *ctx) {
-  const char* path = duk_require_string(ctx, 0);
+  const char* path;
+
+  dschema_check(ctx, (const duv_schema_entry[]) {
+    {"path", duk_is_string},
+    {NULL}
+  });
+
+  path = duk_get_string(ctx, 0);
   duv_check(ctx, uv_chdir(path));
   return 0;
 }

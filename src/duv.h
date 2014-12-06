@@ -6,7 +6,6 @@
 #include <assert.h>
 #include <unistd.h>
 
-
 typedef enum { false, true } bool;
 
 #if defined(_WIN32)
@@ -67,5 +66,6 @@ duk_ret_t dukopen_uv(duk_context *ctx);
 #include "refs.h"
 #include "utils.h"
 #include "schema.h"
+#include "uv_schema.h"
 
 #endif

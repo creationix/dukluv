@@ -1,5 +1,5 @@
-#ifndef DUV_SCHEMA_H
-#define DUV_SCHEMA_H
+#ifndef DSCHEMA_H
+#define DSCHEMA_H
 
 #include "duktape.h"
 

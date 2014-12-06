@@ -20,6 +20,7 @@ add_library(duv
   src/fs.c
   src/misc.c
   src/utils.c
+  src/uv_schema.c
 )
 
 add_library(dschema
