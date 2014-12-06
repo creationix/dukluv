@@ -63,3 +63,13 @@ duk_bool_t duv_is_pipe(duk_context* ctx, duk_idx_t index) {
   return size == sizeof(*handle) &&
          handle->type == UV_NAMED_PIPE;
 }
+
+duk_bool_t duv_is_tty(duk_context* ctx, duk_idx_t index) {
+  uv_tty_t* handle;
+  duk_size_t size;
+  if (!duk_is_fixed_buffer(ctx, index)) return 0;
+  handle = duk_get_buffer(ctx, index, &size);
+  // TODO: find safer check than size to verify struct type
+  return size == sizeof(*handle) &&
+         handle->type == UV_TTY;
+}

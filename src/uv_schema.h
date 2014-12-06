@@ -12,5 +12,6 @@ duk_bool_t duv_is_stream(duk_context* ctx, duk_idx_t index);
 duk_bool_t duv_is_timer(duk_context* ctx, duk_idx_t index);
 duk_bool_t duv_is_tcp(duk_context* ctx, duk_idx_t index);
 duk_bool_t duv_is_pipe(duk_context* ctx, duk_idx_t index);
+duk_bool_t duv_is_tty(duk_context* ctx, duk_idx_t index);
 
 #endif
