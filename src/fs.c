@@ -9,82 +9,72 @@ static void duv_push_timespec_table(duk_context *ctx, const uv_timespec_t* t) {
 }
 
 static void duv_push_stats_table(duk_context *ctx, const uv_stat_t* s) {
-  const char* type;
+  const char* type = NULL;
   duk_push_object(ctx);
-  duk_push_uint(ctx, s->st_dev);
-  duk_put_prop_string(ctx, -2, "dev");
   duk_push_uint(ctx, s->st_mode);
   duk_put_prop_string(ctx, -2, "mode");
-  duk_push_uint(ctx, s->st_nlink);
-  duk_put_prop_string(ctx, -2, "nlink");
   duk_push_uint(ctx, s->st_uid);
   duk_put_prop_string(ctx, -2, "uid");
   duk_push_uint(ctx, s->st_gid);
   duk_put_prop_string(ctx, -2, "gid");
-  duk_push_uint(ctx, s->st_rdev);
-  duk_put_prop_string(ctx, -2, "rdev");
-  duk_push_uint(ctx, s->st_ino);
-  duk_put_prop_string(ctx, -2, "ino");
   duk_push_uint(ctx, s->st_size);
   duk_put_prop_string(ctx, -2, "size");
-  duk_push_uint(ctx, s->st_blksize);
-  duk_put_prop_string(ctx, -2, "blksize");
-  duk_push_uint(ctx, s->st_blocks);
-  duk_put_prop_string(ctx, -2, "blocks");
-  duk_push_uint(ctx, s->st_flags);
-  duk_put_prop_string(ctx, -2, "flags");
-  duk_push_uint(ctx, s->st_gen);
-  duk_put_prop_string(ctx, -2, "gen");
   duv_push_timespec_table(ctx, &s->st_atim);
-  duk_put_prop_string(ctx, -2, "atim");
+  duk_put_prop_string(ctx, -2, "atime");
   duv_push_timespec_table(ctx, &s->st_mtim);
-  duk_put_prop_string(ctx, -2, "mtim");
+  duk_put_prop_string(ctx, -2, "mtime");
   duv_push_timespec_table(ctx, &s->st_ctim);
-  duk_put_prop_string(ctx, -2, "ctim");
-  duv_push_timespec_table(ctx, &s->st_birthtim);
-  duk_put_prop_string(ctx, -2, "birthtim");
+  duk_put_prop_string(ctx, -2, "ctime");
   if (S_ISREG(s->st_mode)) {
-    type = "FILE";
+    type = "file";
   }
   else if (S_ISDIR(s->st_mode)) {
-    type = "DIR";
+    type = "directory";
   }
   else if (S_ISLNK(s->st_mode)) {
-    type = "LINK";
+    type = "link";
   }
   else if (S_ISFIFO(s->st_mode)) {
-    type = "FIFO";
+    type = "fifo";
   }
 #ifdef S_ISSOCK
   else if (S_ISSOCK(s->st_mode)) {
-    type = "SOCKET";
+    type = "socket";
   }
 #endif
   else if (S_ISCHR(s->st_mode)) {
-    type = "CHAR";
+    type = "char";
   }
   else if (S_ISBLK(s->st_mode)) {
-    type = "BLOCK";
+    type = "block";
   }
-  else {
-    type = "UNKNOWN";
-  }
+  if (type) {
   duk_push_string(ctx, type);
   duk_put_prop_string(ctx, -2, "type");
-#ifdef S_ISSOCK
-  duk_push_boolean(ctx, S_ISSOCK(s->st_mode));
-  duk_put_prop_string(ctx, -2, "is_socket");
-#endif
+  }
 }
 
 static int duv_string_to_flags(duk_context *ctx, const char* string) {
-  if (strcmp(string, "r") == 0) return O_RDONLY;
-  if (strcmp(string, "r+") == 0) return O_RDWR;
-  if (strcmp(string, "w") == 0) return O_CREAT | O_TRUNC | O_WRONLY;
-  if (strcmp(string, "w+") == 0) return O_CREAT | O_TRUNC | O_RDWR;
-  if (strcmp(string, "a") == 0) return O_APPEND | O_CREAT | O_WRONLY;
-  if (strcmp(string, "a+") == 0) return O_APPEND | O_CREAT | O_RDWR;
-  duk_error(ctx, DUK_ERR_TYPE_ERROR, "Unknown file open flag '%s'", string);
+  bool read = false;
+  bool write = false;
+  int flags = 0;
+  while (string) {
+    switch (string[0]) {
+      case 'r': read = true; break;
+      case 'w': write = true; flags |= O_TRUNC | O_CREAT; break;
+      case 'a': write = true; flags |= O_APPEND | O_CREAT; break;
+      case '+': read = true; write = true; break;
+      case 'x': flags |= O_EXCL; break;
+      case 's': flags |= O_SYNC; break;
+      default:
+        duk_error(ctx, DUK_ERR_TYPE_ERROR, "Unknown file open flag '%s'", string);
+        return 0;
+    }
+    string++;
+  }
+  flags |= read ? (write ? O_RDWR : O_RDONLY) :
+                  (write ? O_WRONLY : 0);
+  return flags;
 }
 
 static void duv_push_error_result(duk_context *ctx, uv_fs_t* req) {
@@ -136,6 +126,10 @@ static void duv_push_fs_result(duk_context *ctx, uv_fs_t* req) {
 
     case UV_FS_READLINK:
       duk_push_string(ctx, (char*)req->ptr);
+      break;
+
+    case UV_FS_MKDTEMP:
+      duk_push_string(ctx, req->path);
       break;
 
     case UV_FS_READ:
@@ -307,13 +301,13 @@ duk_ret_t duv_fs_scandir_next(duk_context *ctx) {
   duk_put_prop_string(ctx, -2, "name");
   switch (ent.type) {
     case UV_DIRENT_UNKNOWN: type = NULL;     break;
-    case UV_DIRENT_FILE:    type = "FILE";   break;
-    case UV_DIRENT_DIR:     type = "DIR";    break;
-    case UV_DIRENT_LINK:    type = "LINK";   break;
-    case UV_DIRENT_FIFO:    type = "FIFO";   break;
-    case UV_DIRENT_SOCKET:  type = "SOCKET"; break;
-    case UV_DIRENT_CHAR:    type = "CHAR";   break;
-    case UV_DIRENT_BLOCK:   type = "BLOCK";  break;
+    case UV_DIRENT_FILE:    type = "file";   break;
+    case UV_DIRENT_DIR:     type = "directory";    break;
+    case UV_DIRENT_LINK:    type = "link";   break;
+    case UV_DIRENT_FIFO:    type = "fifo";   break;
+    case UV_DIRENT_SOCKET:  type = "socket"; break;
+    case UV_DIRENT_CHAR:    type = "char";   break;
+    case UV_DIRENT_BLOCK:   type = "block";  break;
   }
   if (type) {
     duk_push_string(ctx, type);
@@ -385,10 +379,22 @@ duk_ret_t duv_fs_sendfile(duk_context *ctx) {
 
 duk_ret_t duv_fs_access(duk_context *ctx) {
   const char* path = duk_require_string(ctx, 0);
-  int flags = duk_require_uint(ctx, 1);
+  const char* string = duk_require_string(ctx, 1);
+  int mode = 0;
+  size_t i, l;
+  for (i = 0, l = strlen(string); i < l; ++i) {
+    switch (string[i]) {
+      case 'r': case 'R': mode |= R_OK; break;
+      case 'w': case 'W': mode |= W_OK; break;
+      case 'x': case 'X': mode |= X_OK; break;
+      default:
+        duk_error(ctx, DUK_ERR_TYPE_ERROR, "Unknown file access mode '%s'", string);
+        return 0;
+    }
+  }
   uv_fs_t* req = duk_push_fixed_buffer(ctx, sizeof(*req));
   req->data = duv_setup_req(ctx, 2);
-  FS_CALL(access, req, path, flags);
+  FS_CALL(access, req, path, mode);
 }
 
 duk_ret_t duv_fs_chmod(duk_context *ctx) {

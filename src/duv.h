@@ -4,6 +4,10 @@
 #include "duktape.h"
 #include "uv.h"
 #include <assert.h>
+#include <unistd.h>
+
+
+typedef enum { false, true } bool;
 
 #if defined(_WIN32)
 # include <fcntl.h>
