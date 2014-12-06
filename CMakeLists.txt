@@ -4,7 +4,6 @@ project (dukluv)
 
 include(duktape.cmake)
 include(uv.cmake)
-include(http_parser.cmake)
 
 add_library(duv
   src/duv.c
@@ -23,14 +22,10 @@ add_library(duv
   src/utils.c
 )
 
-add_library(dhttp_parser
-  src/dhttp_parser.c
-)
-
 add_library(dschema
   src/schema.c
 )
 
 add_executable(dukluv src/main.c)
 
-target_link_libraries(dukluv duv dschema dhttp_parser duktape uv http_parser)
+target_link_libraries(dukluv duv dschema duktape uv)
