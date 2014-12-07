@@ -1,13 +1,14 @@
 "use strict";
 
-var stdout = uv.new_tty(1, false);
+var stdout = exports.stdout = uv.new_tty(1, false);
+exports.stdin = uv.new_tty(0, true);
+exports.stderr = uv.new_tty(2, false);
 var width = uv.tty_get_winsize(stdout).width;
 var Handle = require('./classes.js').Handle;
 var Req = require('./classes.js').Req;
 
 exports.prettyPrint = prettyPrint;
 exports.dump = dump;
-exports.stdout = stdout;
 exports.color = color;
 exports.colorize = colorize;
 
