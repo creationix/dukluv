@@ -259,22 +259,98 @@ static duk_ret_t duv_mod_resolve(duk_context *ctx) {
 
 // Default Duktape.modLoad implementation
 // return Duktape.modCompile.call(module, loadFile(module.id));
+//     or load shared libraries using Duktape.loadlib.
 static duk_ret_t duv_mod_load(duk_context *ctx) {
+  const char* id;
+  const char* ext;
+
   dschema_check(ctx, (const duv_schema_entry[]) {
     {NULL}
   });
 
   duk_get_global_string(ctx, "Duktape");
-  duk_get_prop_string(ctx, -1, "modCompile");
   duk_push_this(ctx);
-  duk_push_c_function(ctx, duv_loadfile, 1);
-  duk_get_prop_string(ctx, -2, "id");
-  duk_call(ctx, 1);
-  duk_call_method(ctx, 1);
+  duk_get_prop_string(ctx, -1, "id");
+  id = duk_get_string(ctx, -1);
+  if (!id) {
+    duk_error(ctx, DUK_ERR_ERROR, "Missing id in module");
+    return 0;
+  }
 
-  return 1;
+  // calculate the extension to know which compiler to use.
+  ext = id + strlen(id);
+  while (ext > id && ext[0] != '.') { --ext; }
+
+  if (strcmp(ext, ".js") == 0) {
+    // Stack: [Duktape, this, id]
+    duk_push_c_function(ctx, duv_loadfile, 1);
+    // Stack: [Duktape, this, id, loadfile]
+    duk_insert(ctx, -2);
+    // Stack: [Duktape, this, loadfile, id]
+    duk_call(ctx, 1);
+    // Stack: [Duktape, this, data]
+    duk_get_prop_string(ctx, -3, "modCompile");
+    // Stack: [Duktape, this, data, modCompile]
+    duk_insert(ctx, -3);
+    // Stack: [Duktape, modCompile, this, data]
+    duk_call_method(ctx, 1);
+    // Stack: [Duktape, exports]
+    return 1;
+  }
+
+  if (strcmp(ext, ".so") == 0 || strcmp(ext, ".dll") == 0) {
+    const char* name = ext;
+    while (name > id && name[-1] != '/' && name[-1] != '\\') { --name; }
+    // Stack: [Duktape, this, id]
+    duk_get_prop_string(ctx, -3, "loadlib");
+    // Stack: [Duktape, this, id, loadlib]
+    duk_insert(ctx, -2);
+    // Stack: [Duktape, this, loadlib, id]
+    duk_push_sprintf(ctx, "dukopen_%.*s", (int)(ext - name), name);
+    // Stack: [Duktape, this, loadlib, id, name]
+    duk_call(ctx, 2);
+    // Stack: [Duktape, this, fn]
+    duk_call(ctx, 0);
+    // Stack: [Duktape, this, exports]
+    duk_dup(ctx, -1);
+    // Stack: [Duktape, this, exports, exports]
+    duk_put_prop_string(ctx, -3, "exports");
+    // Stack: [Duktape, this, exports]
+    return 1;
+  }
+
+  duk_error(ctx, DUK_ERR_ERROR,
+    "Unsupported extension: '%s', must be '.js', '.so', or '.dll'.", ext);
+  return 0;
 }
 
+// Load a duktape C function from a shared library by path and name.
+static duk_ret_t duv_loadlib(duk_context *ctx) {
+  const char *name, *path;
+  uv_lib_t lib;
+  duk_c_function fn;
+
+  // Check the args
+  dschema_check(ctx, (const duv_schema_entry[]) {
+    {"path", duk_is_string},
+    {"name", duk_is_string},
+    {NULL}
+  });
+
+  path = duk_get_string(ctx, 0);
+  name = duk_get_string(ctx, 1);
+
+  if (uv_dlopen(path, &lib)) {
+    duk_error(ctx, DUK_ERR_ERROR, "Cannot load shared library %s", path);
+    return 0;
+  }
+  if (uv_dlsym(&lib, name, (void**)&fn)) {
+    duk_error(ctx, DUK_ERR_ERROR, "Unable to find %s in %s", name, path);
+    return 0;
+  }
+  duk_push_c_function(ctx, fn, 0);
+  return 1;
+}
 
 // Given a module and js code, compile the code and execute as CJS module
 // return the result of the compiled code ran as a function.
@@ -324,6 +400,8 @@ static duk_ret_t duv_main(duk_context *ctx) {
   duk_put_prop_string(ctx, -2, "modResolve");
   duk_push_c_function(ctx, duv_mod_load, 0);
   duk_put_prop_string(ctx, -2, "modLoad");
+  duk_push_c_function(ctx, duv_loadlib, 2);
+  duk_put_prop_string(ctx, -2, "loadlib");
   duk_pop(ctx);
 
   // Put in some quick globals to test things.
