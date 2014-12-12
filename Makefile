@@ -10,7 +10,7 @@ test: dukluv
 	build/dukluv unit-tests.js
 
 install: test
-	install -s build/dukluv /usr/local/bin
+	install build/dukluv /usr/local/bin
 
 uninstall:
 	rm -f /usr/local/bin/dukluv
