@@ -1,7 +1,7 @@
 #ifndef DUV_REFS_H
 #define DUV_REFS_H
 
-#include "duv.h"
+#include "duktape.h"
 
 // Create a global array refs in the heap stash.
 void duv_ref_setup(duk_context *ctx);
