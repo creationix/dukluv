@@ -1,5 +1,5 @@
 [submodule "lib/uv"]
-	url = https://github.com/joyent/libuv.git
+	url = https://github.com/libuv/libuv.git
 	ref = refs/heads/v1.x
 	path = lib/uv
 [submodule "lib/duktape"]
