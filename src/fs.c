@@ -58,7 +58,7 @@ static int duv_string_to_flags(duk_context *ctx, const char* string) {
   bool read = false;
   bool write = false;
   int flags = 0;
-  while (string) {
+  while (string && *string != NULL) {
     switch (string[0]) {
       case 'r': read = true; break;
       case 'w': write = true; flags |= O_TRUNC | O_CREAT; break;
