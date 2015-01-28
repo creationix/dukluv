@@ -65,7 +65,11 @@ static int duv_string_to_flags(duk_context *ctx, const char* string) {
       case 'a': write = true; flags |= O_APPEND | O_CREAT; break;
       case '+': read = true; write = true; break;
       case 'x': flags |= O_EXCL; break;
+
+#ifndef _WIN32
       case 's': flags |= O_SYNC; break;
+#endif
+
       default:
         duk_error(ctx, DUK_ERR_TYPE_ERROR, "Unknown file open flag '%s'", string);
         return 0;
