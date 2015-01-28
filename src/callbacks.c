@@ -60,7 +60,7 @@ void duv_write_cb(uv_write_t* req, int status) {
   duk_context *ctx = req->handle->loop->data;
   duv_push_status(ctx, status);
   duv_fulfill_req(ctx, (uv_req_t*)req, 1);
-  req->data = duv_cleanup_req(ctx, req->data);
+  duv_cleanup_req(ctx, req->data);
 }
 
 void duv_alloc_cb(uv_handle_t* handle, size_t suggested_size, uv_buf_t* buf) {
