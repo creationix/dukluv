@@ -1,10 +1,13 @@
 #ifndef DUV_H
 #define DUV_H
 
-#include "duktape.h"
 #include "uv.h"
+#include "duktape.h"
 #include <assert.h>
+
+#if !defined(_WIN32)
 #include <unistd.h>
+#endif
 
 typedef enum { false, true } bool;
 
