@@ -56,13 +56,20 @@ static duk_ret_t duv_path_join(duk_context *ctx) {
   // Walk through all the args and split into a linked list
   // of segments
   {
-    int i;
-    for (i = 0; i < duk_get_top(ctx); ++i) {
+    // Scan backwards looking for the the last absolute positioned path.
+    int top = duk_get_top(ctx);
+    int i = top - 1;
+    while (i > 0) {
+      const char* part = duk_require_string(ctx, i);
+      if (part[0] == '/') break;
+      i--;
+    }
+    for (; i < top; ++i) {
       const char* part = duk_require_string(ctx, i);
       int j;
       int start = 0;
       int length = strlen(part);
-      if (!i && part[0] == 0x2f) {
+      if (part[0] == '/') {
         absolute = 1;
       }
       while (start < length && part[start] == 0x2f) { ++start; }
