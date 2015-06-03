@@ -114,6 +114,7 @@ static const duk_function_list_entry duv_funcs[] = {
   {"loadavg", duv_loadavg, 0},
   {"exepath", duv_exepath, 0},
   {"cwd", duv_cwd, 0},
+  {"os_homedir", duv_os_homedir, 0},
   {"chdir", duv_chdir, 1},
   {"get_total_memory", duv_get_total_memory, 0},
   {"hrtime", duv_hrtime, 0},

@@ -15,6 +15,7 @@ duk_ret_t duv_interface_addresses(duk_context *ctx);
 duk_ret_t duv_loadavg(duk_context *ctx);
 duk_ret_t duv_exepath(duk_context *ctx);
 duk_ret_t duv_cwd(duk_context *ctx);
+duk_ret_t duv_os_homedir(duk_context *ctx);
 duk_ret_t duv_chdir(duk_context *ctx);
 duk_ret_t duv_get_total_memory(duk_context *ctx);
 duk_ret_t duv_hrtime(duk_context *ctx);
