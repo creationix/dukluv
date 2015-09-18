@@ -12,6 +12,7 @@
 #include "tty.h"
 #include "fs.h"
 #include "misc.h"
+#include "miniz.h"
 
 static const duk_function_list_entry duv_funcs[] = {
   // loop.c
@@ -118,6 +119,10 @@ static const duk_function_list_entry duv_funcs[] = {
   {"chdir", duv_chdir, 1},
   {"get_total_memory", duv_get_total_memory, 0},
   {"hrtime", duv_hrtime, 0},
+
+  // miniz.c
+  {"inflate", duv_tinfl, 2},
+  {"deflate", duv_tdefl, 2},
 
   {NULL, NULL, 0},
 };
