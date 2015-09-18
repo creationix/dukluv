@@ -238,12 +238,23 @@ duk_ret_t duv_fs_unlink(duk_context *ctx) {
 }
 
 duk_ret_t duv_fs_write(duk_context *ctx) {
-  uv_file file = duk_require_uint(ctx, 0);
+  uv_file file;
   uv_buf_t buf;
   int64_t offset;
+
+  dschema_check(ctx, (const duv_schema_entry[]){
+    {"fd", duv_is_fd},
+    {"data", dschema_is_data},
+    {"offset", duk_is_number},
+    {"next", dschema_is_continuation},
+    {NULL}
+  });
+
+  file = duk_get_uint(ctx, 0);
+  duv_get_data(ctx, 1, &buf);
+  offset = duk_get_number(ctx, 2);
+
   uv_fs_t* req;
-  buf.base = (char*)duk_require_lstring(ctx, 1, &buf.len);
-  offset = duk_require_uint(ctx, 2);
   req = duk_push_fixed_buffer(ctx, sizeof(*req));
   req->data = duv_setup_req(ctx, 3);
   req->ptr = buf.base;
