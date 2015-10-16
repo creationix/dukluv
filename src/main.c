@@ -369,15 +369,19 @@ static duk_ret_t duv_mod_compile(duk_context *ctx) {
   });
   duk_to_string(ctx, 0);
 
+  duk_push_this(ctx);
+  duk_get_prop_string(ctx, -1, "id");
+
   // Wrap the code
   duk_push_string(ctx, "function(){var module=this,exports=this.exports,require=this.require.bind(this);");
   duk_dup(ctx, 0);
   duk_push_string(ctx, "}");
   duk_concat(ctx, 3);
+  duk_insert(ctx, -2);
 
   // Compile to a function
-  duk_get_prop_string(ctx, 0, "id");
   duk_compile(ctx, DUK_COMPILE_FUNCTION);
+
   duk_push_this(ctx);
   duk_call_method(ctx, 0);
 
