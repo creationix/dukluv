@@ -119,6 +119,8 @@ static const duk_function_list_entry duv_funcs[] = {
   {"chdir", duv_chdir, 1},
   {"get_total_memory", duv_get_total_memory, 0},
   {"hrtime", duv_hrtime, 0},
+  {"update_time", duv_update_time, 0},
+  {"timer_now", duv_timer_now, 0},
 
   // miniz.c
   {"inflate", duv_tinfl, 2},
