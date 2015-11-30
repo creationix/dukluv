@@ -120,7 +120,7 @@ static const duk_function_list_entry duv_funcs[] = {
   {"get_total_memory", duv_get_total_memory, 0},
   {"hrtime", duv_hrtime, 0},
   {"update_time", duv_update_time, 0},
-  {"timer_now", duv_timer_now, 0},
+  {"now", duv_now, 0},
 
   // miniz.c
   {"inflate", duv_tinfl, 2},
