@@ -262,3 +262,13 @@ duk_ret_t duv_hrtime(duk_context *ctx) {
   return 1;
 }
 
+duk_ret_t duv_update_time(duk_context *ctx) {
+  uv_update_time(duv_loop(ctx));
+  return 0;
+}
+
+duk_ret_t duv_now(duk_context *ctx) {
+  uint64_t now = uv_now(duv_loop(ctx));
+  duk_push_uint(ctx, now);
+  return 1;
+}
