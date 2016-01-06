@@ -241,6 +241,8 @@ duk_ret_t duv_fs_write(duk_context *ctx) {
   uv_file file;
   uv_buf_t buf;
   int64_t offset;
+  duv_req_t *data;
+  uv_fs_t* req;
 
   dschema_check(ctx, (const duv_schema_entry[]){
     {"fd", duv_is_fd},
@@ -254,9 +256,12 @@ duk_ret_t duv_fs_write(duk_context *ctx) {
   duv_get_data(ctx, 1, &buf);
   offset = duk_get_number(ctx, 2);
 
-  uv_fs_t* req;
   req = duk_push_fixed_buffer(ctx, sizeof(*req));
-  req->data = duv_setup_req(ctx, 3);
+  data = duv_setup_req(ctx, 3);
+  duk_dup(ctx, 1);
+  data->data_ref = duv_ref(ctx);
+
+  req->data = data;
   req->ptr = buf.base;
   FS_CALL(write, req, file, &buf, 1, offset);
 }
