@@ -40,6 +40,7 @@ duv_req_t* duv_setup_req(duk_context *ctx, int callback_index) {
   else {
     data->callback_ref = 0;
   }
+  data->data_ref = 0;
   data->data = NULL;
   return data;
 }
@@ -48,6 +49,7 @@ duv_req_t* duv_cleanup_req(duk_context *ctx, duv_req_t *data) {
   duv_unref(ctx, data->req_ref);
   duv_unref(ctx, data->context);
   duv_unref(ctx, data->callback_ref);
+  duv_unref(ctx, data->data_ref);
   duk_free(ctx, data->data);
   duk_free(ctx, data);
   return NULL;

@@ -61,6 +61,7 @@ typedef struct {
   int req_ref; // ref for uv_req_t's userdata
   int context;
   int callback_ref; // ref for callback
+  int data_ref;
   void* data; // extra data
 } duv_req_t;
 
