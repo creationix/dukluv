@@ -25,7 +25,7 @@ duk_ret_t duv_listen(duk_context *ctx) {
   dschema_check(ctx, (const duv_schema_entry[]) {
     {"stream", duv_is_stream},
     {"backlog", duk_is_number},
-    {"onConnection", duk_is_callable},
+    {"onConnection", duk_is_function},
     {NULL}
   });
 
@@ -57,7 +57,7 @@ duk_ret_t duv_read_start(duk_context *ctx) {
 
   dschema_check(ctx, (const duv_schema_entry[]) {
     {"stream", duv_is_stream},
-    {"onread", duk_is_callable},
+    {"onread", duk_is_function},
     {NULL}
   });
 
@@ -169,4 +169,3 @@ duk_ret_t duv_stream_set_blocking(duk_context *ctx) {
   duv_check(ctx, uv_stream_set_blocking(handle, blocking));
   return 0;
 }
-

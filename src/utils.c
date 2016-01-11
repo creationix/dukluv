@@ -33,7 +33,7 @@ duv_req_t* duv_setup_req(duk_context *ctx, int callback_index) {
   data->context = duv_ref(ctx);
   duk_dup(ctx, -1);
   data->req_ref = duv_ref(ctx);
-  if (duk_is_callable(ctx, callback_index)) {
+  if (duk_is_function(ctx, callback_index)) {
     duk_dup(ctx, callback_index);
     data->callback_ref = duv_ref(ctx);
   }

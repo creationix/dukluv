@@ -6,7 +6,7 @@ duk_bool_t dschema_is_data(duk_context* ctx, duk_idx_t index) {
 
 duk_bool_t dschema_is_continuation(duk_context* ctx, duk_idx_t index) {
   return !duk_is_valid_index(ctx, index) ||
-          duk_is_callable(ctx, index) ||
+          duk_is_function(ctx, index) ||
           duk_is_undefined(ctx, index);
 }
 

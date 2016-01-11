@@ -22,7 +22,7 @@ duk_ret_t duv_timer_start(duk_context *ctx) {
     {"timer", duv_is_timer},
     {"timeout", duk_is_number},
     {"repeat", duk_is_number},
-    {"ontimeout", duk_is_callable},
+    {"ontimeout", duk_is_function},
     {NULL}
   });
 
