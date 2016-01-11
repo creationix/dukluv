@@ -8,7 +8,8 @@ duk_ret_t duv_run(duk_context *ctx) {
   return 0;
 }
 
-static void duv_walk_cb(uv_handle_t *handle, duk_context *ctx) {
+static void duv_walk_cb(uv_handle_t *handle, void* c) {
+  duk_context *ctx = c;
   duv_handle_t* data = handle->data;
   duk_dup(ctx, 0);
   duv_push_ref(ctx, data->context);
