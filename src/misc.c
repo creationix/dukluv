@@ -272,3 +272,9 @@ duk_ret_t duv_now(duk_context *ctx) {
   duk_push_uint(ctx, now);
   return 1;
 }
+
+duk_ret_t duv_argv(duk_context *ctx) {
+  duk_push_global_stash(ctx);
+  duk_get_prop_string(ctx, -1, "argv");
+  return 1;
+}
