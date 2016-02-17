@@ -121,6 +121,7 @@ static const duk_function_list_entry duv_funcs[] = {
   {"hrtime", duv_hrtime, 0},
   {"update_time", duv_update_time, 0},
   {"now", duv_now, 0},
+  {"argv", duv_argv, 0},
 
   // miniz.c
   {"inflate", duv_tinfl, 2},
