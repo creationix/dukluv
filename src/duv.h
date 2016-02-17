@@ -9,7 +9,11 @@
 #include <unistd.h>
 #endif
 
+#if _MSC_VER >= 1800
+#include <stdbool.h>
+#else
 typedef enum { false, true } bool;
+#endif
 
 #if defined(_WIN32)
 # include <fcntl.h>
