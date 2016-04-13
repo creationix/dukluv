@@ -13,12 +13,18 @@ static duk_ret_t duv_loadfile(duk_context *ctx) {
   uv_buf_t buf;
 
   if (uv_fs_open(&loop, &req, path, O_RDONLY, 0644, NULL) < 0) goto fail;
+  uv_fs_req_cleanup(&req);
   fd = req.result;
   if (uv_fs_fstat(&loop, &req, fd, NULL) < 0) goto fail;
+  uv_fs_req_cleanup(&req);
   size = req.statbuf.st_size;
   chunk = duk_alloc(ctx, size);
   buf = uv_buf_init(chunk, size);
-  if (uv_fs_read(&loop, &req, fd, &buf, 1, 0, NULL) < 0) goto fail;
+  if (uv_fs_read(&loop, &req, fd, &buf, 1, 0, NULL) < 0) {
+    duk_free(ctx, chunk);
+    goto fail;
+  }
+  uv_fs_req_cleanup(&req);
   duk_push_lstring(ctx, chunk, size);
   duk_free(ctx, chunk);
   uv_fs_close(&loop, &req, fd, NULL);
@@ -27,6 +33,7 @@ static duk_ret_t duv_loadfile(duk_context *ctx) {
   return 1;
 
   fail:
+  uv_fs_req_cleanup(&req);
   if (fd) uv_fs_close(&loop, &req, fd, NULL);
   uv_fs_req_cleanup(&req);
   duk_error(ctx, DUK_ERR_ERROR, "%s: %s: %s", uv_err_name(req.result), uv_strerror(req.result), path);
