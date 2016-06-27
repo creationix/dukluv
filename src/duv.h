@@ -19,13 +19,27 @@ typedef enum { false, true } bool;
 # include <fcntl.h>
 # include <sys/types.h>
 # include <sys/stat.h>
+#ifndef  S_ISREG
 # define S_ISREG(x)  (((x) & _S_IFMT) == _S_IFREG)
+#endif
+#ifndef  S_ISDIR
 # define S_ISDIR(x)  (((x) & _S_IFMT) == _S_IFDIR)
+#endif
+#ifndef  S_ISFIFO
 # define S_ISFIFO(x) (((x) & _S_IFMT) == _S_IFIFO)
+#endif
+#ifndef  S_ISCHR
 # define S_ISCHR(x)  (((x) & _S_IFMT) == _S_IFCHR)
+#endif
+#ifndef  S_ISBLK
 # define S_ISBLK(x)  0
+#endif
+#ifndef  S_ISLINK
 # define S_ISLNK(x)  0
+#endif
+#ifndef  S_ISSOCK
 # define S_ISSOCK(x) 0
+#endif
 #endif
 
 #ifndef PATH_MAX
