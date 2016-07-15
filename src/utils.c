@@ -113,12 +113,14 @@ void duv_fulfill_req(duk_context *ctx, uv_req_t* req, int nargs) {
 }
 
 void duv_get_data(duk_context *ctx, int index, uv_buf_t* buf) {
+  duk_size_t len;
   if (duk_is_string(ctx, index)) {
-    buf->base = (char*) duk_get_lstring(ctx, index, &buf->len);
+    buf->base = (char*) duk_get_lstring(ctx, index, &len);
   }
   else {
-    buf->base = duk_get_buffer(ctx, index, &buf->len);
+    buf->base = duk_get_buffer(ctx, index, &len);
   }
+  buf->len = len;
 }
 
 const char* duv_protocol_to_string(int family) {
